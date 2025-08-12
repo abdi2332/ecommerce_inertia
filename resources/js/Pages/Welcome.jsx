@@ -28,7 +28,8 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
             toggleMobileMenu={toggleMobileMenu}
             isCartOpen={isCartOpen}
             isMobileMenuOpen={isMobileMenuOpen}
-            isUserDropdownOpen={isUserDropdownOpen} />
+            isUserDropdownOpen={isUserDropdownOpen}
+            cartItems ={cartItems} />
 
 <section className="bg-white dark:bg-gray-800">
     <div className="grid max-w-screen-xl px-4 py-8 mx-auto lg:gap-8 xl:gap-0 lg:py-16 lg:grid-cols-12">

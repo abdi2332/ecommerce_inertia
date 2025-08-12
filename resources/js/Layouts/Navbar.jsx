@@ -1,6 +1,6 @@
 import React from 'react'
 
-const Navbar = ({toggleCart, toggleUserDropdown, toggleMobileMenu,isCartOpen,isMobileMenuOpen,isUserDropdownOpen}) => {
+const Navbar = ({toggleCart, toggleUserDropdown, toggleMobileMenu,isCartOpen,isMobileMenuOpen,isUserDropdownOpen,cartItems}) => {
   return (
          <nav className="bg-white dark:bg-gray-800 antialiased">
         <div className="max-w-screen-xl px-4 mx-auto 2xl:px-0 py-4">
