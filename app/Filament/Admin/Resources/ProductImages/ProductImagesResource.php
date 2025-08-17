@@ -7,16 +7,17 @@ use App\Filament\Admin\Resources\ProductImages\Pages\EditProductImages;
 use App\Filament\Admin\Resources\ProductImages\Pages\ListProductImages;
 use App\Filament\Admin\Resources\ProductImages\Schemas\ProductImagesForm;
 use App\Filament\Admin\Resources\ProductImages\Tables\ProductImagesTable;
-use App\Models\ProductImages;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use App\Models\ProductImage;
+
 
 class ProductImagesResource extends Resource
 {
-    protected static ?string $model = ProductImages::class;
+    protected static ?string $model = ProductImage::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 

@@ -6,6 +6,9 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Table;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\BooleanColumn;
 
 class ProductImagesTable
 {
@@ -13,7 +16,10 @@ class ProductImagesTable
     {
         return $table
             ->columns([
-                //
+              TextColumn::make('id')->label('ID'),
+              TextColumn::make('product.name')->label('Product Name'),
+              ImageColumn::make('image_path')->label('Image'),
+            
             ])
             ->filters([
                 //
