@@ -6,6 +6,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Schemas\Schema;
+use App\Models\Category;
 
 class ProductForm
 {
@@ -13,12 +14,11 @@ class ProductForm
     {
         return $schema
             ->components([
-                TextInput::make('category_id')
+                Select::make('category_id')
+                    ->label('Category')
                     ->required()
-                    ->numeric(),
-                TextInput::make('user_id')
-                    ->required()
-                    ->numeric(),
+                    ->options(Category::pluck('name', 'id')->toArray()) // fetch categories
+                    ->searchable(),
                 TextInput::make('name')
                     ->required(),
                 TextInput::make('slug')

@@ -1,6 +1,9 @@
-import React from 'react'
+import {React, useState} from 'react'
 
-const Navbar = ({toggleCart, toggleUserDropdown, toggleMobileMenu,isCartOpen,isMobileMenuOpen,isUserDropdownOpen,cartItems}) => {
+
+const Navbar = ({toggleCart, toggleUserDropdown, toggleMobileMenu,isCartOpen,isMobileMenuOpen,isUserDropdownOpen,cart,increaseQuantity,decreaseQuantity}) => {
+  
+
   return (
          <nav className="bg-white dark:bg-gray-800 antialiased">
         <div className="max-w-screen-xl px-4 mx-auto 2xl:px-0 py-4">
@@ -62,7 +65,7 @@ const Navbar = ({toggleCart, toggleUserDropdown, toggleMobileMenu,isCartOpen,isM
 
 {isCartOpen && (
   <div className="absolute right-0 z-10 w-72 space-y-4 overflow-hidden rounded-lg bg-white p-4 antialiased shadow-lg dark:bg-gray-800">
-    {cartItems.map((item) => (
+    {cart.map((item) => (
       <div key={item.id} className="grid grid-cols-5 gap-2 items-center">
         <div className="col-span-3">
           <a href="#" className="text-sm font-semibold leading-none text-gray-900 dark:text-white hover:underline">
@@ -78,7 +81,7 @@ const Navbar = ({toggleCart, toggleUserDropdown, toggleMobileMenu,isCartOpen,isM
           <button
             type="button"
             className="px-2 dark:bg-white py-1 text-sm font-bold border rounded hover:bg-gray-100 dark:hover:bg-gray-700"
-            onClick={() => console.log("Decrease", item.id)} // replace with decrease logic
+            onClick={() => decreaseQuantity(item.id)} // replace with decrease logic
           >
             -
           </button>
@@ -88,7 +91,7 @@ const Navbar = ({toggleCart, toggleUserDropdown, toggleMobileMenu,isCartOpen,isM
           <button
             type="button"
             className="px-2 py-1 dark:bg-white text-sm font-bold border rounded hover:bg-gray-100 dark:hover:bg-gray-700"
-            onClick={() => console.log("Increase", item.id)} // replace with increase logic
+            onClick={() => increaseQuantity(item.id)} // replace with increase logic
           >
             +
           </button>

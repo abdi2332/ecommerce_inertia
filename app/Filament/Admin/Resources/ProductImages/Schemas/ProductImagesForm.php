@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\ProductImages\Schemas;
 
+use App\Models\Product;
 use Filament\Schemas\Schema;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\FileUpload;
@@ -15,7 +16,8 @@ class ProductImagesForm
         return $schema
             ->components([
                 Select::make('product_id')
-                    ->relationship('product', 'name')
+                    ->label('Product')
+                    ->options(Product::pluck('name', 'id')->toArray()) 
                     ->required()
                     ->searchable(),
                 FileUpload::make('image_path')
