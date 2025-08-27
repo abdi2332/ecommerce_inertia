@@ -3,13 +3,41 @@ import { Head, Link } from '@inertiajs/react';
 import Navbar from '../Layouts/Navbar';
 import Footer from '../Layouts/Footer';
 import { usePage } from '@inertiajs/react'
+import { TypesenseInstantSearchAdapter } from 'typesense-instantsearch-adapter';
+import { InstantSearch } from 'react-instantsearch';
+
+
+
+
+
+const typesenseInstantsearchAdapter = new TypesenseInstantSearchAdapter({
+  server: {
+    apiKey: "abcd", // Be sure to use an API key that only allows search operations
+    nodes: [
+      {
+        host: "localhost",
+        port: "8108",
+        path: "", // Optional. Example: If you have your typesense mounted in localhost:8108/typesense, path should be equal to '/typesense'
+        protocol: "http",
+      },
+    ],
+    cacheSearchResultsForSeconds: 2 * 60, // Cache search results from server. Defaults to 2 minutes. Set to 0 to disable caching.
+  },
+  // The following parameters are directly passed to Typesense's search API endpoint.
+  //  So you can pass any parameters supported by the search endpoint below.
+  //  query_by is required.
+  additionalSearchParameters: {
+    query_by: "name,description,categories",
+  },
+});
+const searchClient = typesenseInstantsearchAdapter.searchClient;
 
 export default function Welcome({ auth, laravelVersion, phpVersion , products}) {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [cart, setCart] = useState(products);
-     const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
   const [searchCategory, setSearchCategory] = useState("");
   const [selectedPrice, setSelectedPrice] = useState("");
   const [selectedRating, setSelectedRating] = useState("");
@@ -55,7 +83,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion , products}) 
 
   return (
     <>
- 
+  <InstantSearch indexName="products" searchClient={searchClient}>
     <Navbar toggleCart={toggleCart}
             toggleUserDropdown={toggleUserDropdown}
             toggleMobileMenu={toggleMobileMenu}
@@ -259,7 +287,21 @@ export default function Welcome({ auth, laravelVersion, phpVersion , products}) 
 
         {/* Products Grid */}
         <section className="flex-1">
-          <div className="mb-4 grid gap-4 sm:grid-cols-2 md:mb-8 lg:grid-cols-3 xl:grid-cols-3">
+
+<form class="max-w-full mx-auto my-4">   
+    <label for="default-search" class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Search</label>
+    <div class="relative">
+        <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+            <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+            </svg>
+        </div>
+        <input type="search" id="default-search" class="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search items" required />
+        <button type="submit" class="text-white absolute end-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Search</button>
+    </div>
+</form>
+
+          <div className="mb-4 grid gap-4 sm:grid-cols-2 md:mb-8 lg:grid-cols-3 xl:grid-cols-3">  
              {  
     products.map((product) => ( 
       <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
@@ -376,7 +418,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion , products}) 
 
 
 <Footer/>
-
+</InstantSearch>
     </>
   );
 }
