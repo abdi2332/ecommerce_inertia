@@ -21,6 +21,7 @@ class Product extends Model
             'name'        => $this->name,
             'description' => $this->description ? (string) $this->description : '',
             'price'       => (float) $this->price,
+            'image'       => $this->images()->where('is_primary', true)->value('image_path') ?? '',
             'created_at'  => $this->created_at->timestamp,
         ];
     }
