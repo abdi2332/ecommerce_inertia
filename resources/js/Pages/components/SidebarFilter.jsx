@@ -2,6 +2,7 @@ import React from 'react'
 import {  RefinementList, RangeInput, useNumericMenu } from 'react-instantsearch';
 
    const priceRanges = [
+  { label: 'All', start: 0 },
   { label: 'Under $100', end: 100 },
   { label: 'Under $500', end: 500 },
   { label: 'Under $750', end: 750 },
