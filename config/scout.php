@@ -202,11 +202,17 @@ return [
                           [
                             'name' => 'price',
                             'type' => 'float',
+                            'facet'=> true,
                        ],
                           [
                             'name' => 'created_at',
                             'type' => 'int64',
                           ],
+                            [
+                                'name' => 'category',
+                                'type' => 'string',
+                                'facet' => true,
+                            ],
                    ],
                    'default_sorting_field' => 'created_at',
                ],

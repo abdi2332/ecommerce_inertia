@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Laravel\Scout\Searchable;
+use Illuminate\Support\Str;
 
 class Product extends Model
 {
@@ -22,6 +23,7 @@ class Product extends Model
             'description' => $this->description ? (string) $this->description : '',
             'price'       => (float) $this->price,
             'image'       => $this->images()->where('is_primary', true)->value('image_path') ?? '',
+            'category' => $this->category ? trim(Str::lower($this->category->name)) : '',
             'created_at'  => $this->created_at->timestamp,
         ];
     }
