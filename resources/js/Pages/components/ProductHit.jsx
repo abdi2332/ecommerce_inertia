@@ -12,7 +12,7 @@ const ProductHit = ({hit}) => {
                 ? `/storage/${product.images[0].image_path}` 
                 : 'https://flowbite.s3.amazonaws.com/blocks/e-commerce/imac-front.svg'}
           alt={product.name} /> */}
-               <img className="mx-auto h-full"  src={hit.image?`/storage/${hit.image}`: 'https://flowbite.s3.amazonaws.com/blocks/e-commerce/imac-front.svg'}
+               <img className="mx-auto h-full"  src={hit.image?`${hit.image}`: 'https://flowbite.s3.amazonaws.com/blocks/e-commerce/imac-front.svg'}
           alt={hit.name} />
           </a>
         </div>

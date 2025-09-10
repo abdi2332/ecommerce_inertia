@@ -5,12 +5,8 @@ import Footer from '../Layouts/Footer';
 import { usePage } from '@inertiajs/react'
 import TypesenseInstantSearchAdapter from 'typesense-instantsearch-adapter';
 import ProductHit from './components/ProductHit';
-import { InstantSearch, SearchBox, Hits, } from 'react-instantsearch';
-
-
-
-
-
+import { InstantSearch, SearchBox, Hits, Pagination, Configure  } from 'react-instantsearch';
+import SidebarFilter from './components/SidebarFilter';
 
 
 
@@ -42,27 +38,11 @@ export default function Welcome({ auth, laravelVersion, phpVersion , products}) 
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [cart, setCart] = useState(products);
-  const [selectedCategory, setSelectedCategory] = useState("");
   const [searchCategory, setSearchCategory] = useState("");
-  const [selectedPrice, setSelectedPrice] = useState("");
-  const [selectedRating, setSelectedRating] = useState("");
 
-  const categories = [
-    "Electronics",
-    "Clothing",
-    "Home",
-    "Sports",
-    "Books",
-    "Beauty",
-    "Toys",
-  ];
-  const prices = ["Under $50", "$50 - $100", "$100 - $200", "Above $200"];
-  const ratings = ["4★ & above", "3★ & above", "2★ & above"];
 
-  // Filter categories by search input
-  const filteredCategories = categories.filter((cat) =>
-    cat.toLowerCase().includes(searchCategory.toLowerCase())
-  );
+
+
 
 
     const increaseQuantity = (itemId) => {
@@ -200,95 +180,8 @@ export default function Welcome({ auth, laravelVersion, phpVersion , products}) 
     <div className="mx-auto max-w-7xl px-4 py-6  ">
       <div className="flex gap-6">
         {/* Sidebar Filter */}
-        <aside className="hidden w-60 shrink-0 rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800 lg:block max-h-fit">
-          <h2 className="mb-4 text-base font-semibold text-gray-900 dark:text-white">
-            Filters
-          </h2>
 
-          {/* Category Filter */}
-          <div className="mb-5">
-            <h3 className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-              Category
-            </h3>
-            <input
-              type="text"
-              placeholder="Search category..."
-              value={searchCategory}
-              onChange={(e) => setSearchCategory(e.target.value)}
-              className="mb-3 w-full rounded-md border border-gray-300 px-2 py-1 text-sm focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-            />
-            <ul className="max-h-40 space-y-2 overflow-y-auto pr-1">
-              {filteredCategories.map((cat) => (
-                <li key={cat}>
-                  <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                    <input
-                      type="radio"
-                      name="category"
-                      value={cat}
-                      checked={selectedCategory === cat}
-                      onChange={() => setSelectedCategory(cat)}
-                      className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                    />
-                    {cat}
-                  </label>
-                </li>
-              ))}
-              {filteredCategories.length === 0 && (
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  No results
-                </p>
-              )}
-            </ul>
-          </div>
-
-          {/* Price Filter */}
-          <div className="mb-5">
-            <h3 className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-              Price
-            </h3>
-            <ul className="space-y-2">
-              {prices.map((price) => (
-                <li key={price}>
-                  <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                    <input
-                      type="radio"
-                      name="price"
-                      value={price}
-                      checked={selectedPrice === price}
-                      onChange={() => setSelectedPrice(price)}
-                      className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                    />
-                    {price}
-                  </label>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Rating Filter */}
-          <div>
-            <h3 className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-              Rating
-            </h3>
-            <ul className="space-y-2">
-              {ratings.map((rating) => (
-                <li key={rating}>
-                  <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                    <input
-                      type="radio"
-                      name="rating"
-                      value={rating}
-                      checked={selectedRating === rating}
-                      onChange={() => setSelectedRating(rating)}
-                      className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                    />
-                    {rating}
-                  </label>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </aside>
+        <SidebarFilter/>
 
         {/* Products Grid */}
         <section className="flex-1">
@@ -309,6 +202,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion , products}) 
     reset: "hidden", // hides the ✕ clear button
   }}
 />
+    <Configure hitsPerPage={21} />
 
           <Hits
   hitComponent={ProductHit}
@@ -324,7 +218,19 @@ export default function Welcome({ auth, laravelVersion, phpVersion , products}) 
 
 
     <div className="w-full text-center">
-      <button type="button" className="rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-sm font-medium text-gray-900 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:outline-none focus:ring-4 focus:ring-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white dark:focus:ring-gray-700">Show more</button>
+            <Pagination
+        showFirst={true}     // optional, show "first" button
+        showLast={true}      // optional, show "last" button
+        padding={2}          // how many pages to show around current
+        classNames={{
+          list: "flex space-x-2 mt-4 justify-center",
+          item: "px-3 py-1 rounded border border-gray-300 text-sm cursor-pointer",
+          link: "hover:bg-gray-200",
+          selectedItem: "bg-blue-500 text-white border-blue-500",
+          disabledItem: "opacity-50 cursor-not-allowed",
+        }}
+      />
+
     </div>
   </div>
 
