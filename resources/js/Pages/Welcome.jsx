@@ -33,34 +33,27 @@ const typesenseInstantsearchAdapter = new TypesenseInstantSearchAdapter({
 const searchClient = typesenseInstantsearchAdapter.searchClient;
 
 
-export default function Welcome({ auth, laravelVersion, phpVersion , products}) {
+export default function Welcome({ auth, laravelVersion, phpVersion , cartItem}) {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [cart, setCart] = useState(products);
+  const [cart, setCart] = useState(cartItem || []);
   const [searchCategory, setSearchCategory] = useState("");
 
 
 
+   console.log('Initial cart items:', cart);
 
 
-
-    const increaseQuantity = (itemId) => {
-    setCart(prevCart =>
-      prevCart.map(item =>
-        item.id === itemId ? {...item, quantity: item.quantity + 1} :
-        item
-      )
+    const updateQuantity = (productId, change) => {
+    setCart(prev =>
+    prev.map(item =>
+      item.id === productId ? { ...item, qty: Math.max(0, item.qty + change) } : item
     )
+  );
+
   }
-  const decreaseQuantity = (itemId) => {
-    setCart(prevCart =>
-      prevCart.map(item =>
-        item.id === itemId && item.quantity > 1 ? {...item, quantity: item.quantity - 1} :
-        item
-      )
-    )
-  }
+
 
   const toggleCart = () => setIsCartOpen(!isCartOpen);
   const toggleUserDropdown = () => setIsUserDropdownOpen(!isUserDropdownOpen);
@@ -76,8 +69,8 @@ export default function Welcome({ auth, laravelVersion, phpVersion , products}) 
             isMobileMenuOpen={isMobileMenuOpen}
             isUserDropdownOpen={isUserDropdownOpen}
             cart ={cart}
-            increaseQuantity={(id) => increaseQuantity(id)}
-            decreaseQuantity={(id) => decreaseQuantity(id)} />
+            updateQuantity={updateQuantity}
+ />
 
 <section class="bg-white py-8 antialiased dark:bg-gray-800 md:py-16">
     <div class="mx-auto grid max-w-screen-xl px-4 pb-8 md:grid-cols-12 lg:gap-12 lg:pb-16 xl:gap-0">
