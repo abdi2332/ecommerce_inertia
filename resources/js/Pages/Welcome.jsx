@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import Navbar from '../Layouts/Navbar';
 import Footer from '../Layouts/Footer';
-import { usePage } from '@inertiajs/react'
 import TypesenseInstantSearchAdapter from 'typesense-instantsearch-adapter';
 import ProductHit from './components/ProductHit';
 import { InstantSearch, SearchBox, Hits, Pagination, Configure  } from 'react-instantsearch';
@@ -54,6 +53,11 @@ export default function Welcome({ auth, laravelVersion, phpVersion , cartItem}) 
 
   }
 
+   const removeCartItem = (productId) => {
+    setCart(prev => prev.filter(item => item.id !== productId));
+   }
+  
+
 
   const toggleCart = () => setIsCartOpen(!isCartOpen);
   const toggleUserDropdown = () => setIsUserDropdownOpen(!isUserDropdownOpen);
@@ -70,6 +74,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion , cartItem}) 
             isUserDropdownOpen={isUserDropdownOpen}
             cart ={cart}
             updateQuantity={updateQuantity}
+            removeCartItem={removeCartItem}
  />
 
 <section class="bg-white py-8 antialiased dark:bg-gray-800 md:py-16">
@@ -197,13 +202,16 @@ export default function Welcome({ auth, laravelVersion, phpVersion , cartItem}) 
 />
     <Configure hitsPerPage={21} />
 
-          <Hits
-  hitComponent={ProductHit}
+    <Hits
+    hitComponent={(props) => (
+    <ProductHit {...props} updateQuantity={updateQuantity} />
+  )}
   classNames={{
     list: "mb-4 grid gap-4 sm:grid-cols-2 md:mb-8 lg:grid-cols-3 xl:grid-cols-3",
-    item: "h-full", // optional, to make sure cards stretch properly
+    item: "h-full",
   }}
 />
+
 
         </section>
       </div>

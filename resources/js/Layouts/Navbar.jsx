@@ -3,7 +3,7 @@ import { Link, usePage,  } from '@inertiajs/react';
 import { Inertia } from '@inertiajs/inertia';
 
 
-const Navbar = ({toggleCart, toggleUserDropdown, toggleMobileMenu,isCartOpen,isMobileMenuOpen,isUserDropdownOpen,cart,updateQuantity}) => {
+const Navbar = ({toggleCart, toggleUserDropdown, toggleMobileMenu,isCartOpen,isMobileMenuOpen,isUserDropdownOpen,cart,updateQuantity, removeCartItem }) => {
   
     const updateQty = (productId, change) => {
 
@@ -15,6 +15,7 @@ const Navbar = ({toggleCart, toggleUserDropdown, toggleMobileMenu,isCartOpen,isM
   };
 
   const removeItem = (productId) => {
+    removeCartItem(productId);
     Inertia.post('/cart/remove', { product_id: productId }, { preserveScroll: true });
   };
 

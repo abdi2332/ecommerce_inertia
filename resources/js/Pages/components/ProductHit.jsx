@@ -1,22 +1,19 @@
 import React from 'react'
-import axios from 'axios';
+import { Inertia } from '@inertiajs/inertia';
 
 
-const ProductHit = ({hit}) => {
+const ProductHit = ({hit, updateQuantity}) => {
 
 
-   const addToCart = async (productId) => {
-  try {
-    const { data } = await axios.post('/cart/update', {
-      product_id: productId,
-      change: 1, // +1 means add/increment
-    });
-    
-    console.log('Updated cart:', data.cart);
-  } catch (error) {
-    console.error('Error adding product to cart:', error.response?.data || error);
-  }
-};
+   const updateQty = (productId, change) => {
+  
+        updateQuantity(productId, change);
+      Inertia.post('/cart/update', { product_id: productId, change }, {
+        preserveScroll: true, // keeps scroll position
+        onSuccess: () => {}, // Inertia will re-render page with updated props
+      });
+    };
+
 
 
   return (
@@ -110,7 +107,7 @@ const ProductHit = ({hit}) => {
           <div className="mt-4 flex items-center justify-between gap-4">
             <p className="text-2xl font-extrabold leading-tight text-gray-900 dark:text-white">{hit.price}</p>
 
-            <button type="button" className="inline-flex items-center rounded-lg bg-primary-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-primary-800 focus:outline-none focus:ring-4  focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800" onClick={() => addToCart(hit.id)}>
+            <button type="button" className="inline-flex items-center rounded-lg bg-primary-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-primary-800 focus:outline-none focus:ring-4  focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800" onClick={() => updateQty(hit.id, 1)}>
               <svg className="-ms-2 me-2 h-5 w-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4h1.5L8 16m0 0h8m-8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm.75-3H7.5M11 7H6.312M17 4v6m-3-3h6" />
               </svg>
