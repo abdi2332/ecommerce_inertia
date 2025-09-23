@@ -16,43 +16,47 @@ class ProductController extends Controller
        return "cart:{$userId}";
    }
 
-    public function index()
-    {
-         $userId = auth()->id();
-        $cart = Redis::hgetall($this->cartKey($userId));
+   public function index()
+{
+    $userId = auth()->id();
+    $cartWithDetails = [];
 
-        if (empty($cart)) {
-            return response()->json(['cart' => []]);
+    // Only attempt to fetch cart if user is logged in and Redis is available
+    if ($userId && class_exists('Redis')) {
+        $cart = Redis::hgetall($this->cartKey($userId)) ?: [];
+
+        if (!empty($cart)) {
+            $productsInCart = Product::whereIn('id', array_keys($cart))->get();
+            $cartWithDetails = $productsInCart->map(function ($product) use ($cart) {
+                $qty = (int) $cart[$product->id];
+                return [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'price' => $product->price,
+                    'qty' => $qty,
+                    'subtotal' => $product->price * $qty,
+                ];
+            });
         }
+    }
 
-        $products = Product::whereIn('id', array_keys($cart))->get();
-
-        $cartWithDetails = $products->map(function ($product) use ($cart) {
-            $qty = (int) $cart[$product->id];
-            return [
-                'id' => $product->id,
-                'name' => $product->name,
-                'price' => $product->price,
-                'qty' => $qty,
-                'subtotal' => $product->price * $qty,
-            ];
-        });
-
-         $products = Product::with('category', 'images')->get();
+    // Fetch all products for display
+    $products = Product::with('category', 'images')->get();
 
     return Inertia::render('Welcome', [
         'products' => $products,
-        'cartItem' => $cartWithDetails,
+        'cartItem' => $cartWithDetails, // empty array if no cart
         'laravelVersion' => Application::VERSION,
         'phpVersion' => PHP_VERSION,
         'auth' => [
             'user' => auth()->user() ? [
-                'id' => auth()->id(),
+                'id' => $userId,
                 'name' => auth()->user()->name,
                 'email' => auth()->user()->email,
             ] : null,
         ],
     ]);
 }
+
 
 }
