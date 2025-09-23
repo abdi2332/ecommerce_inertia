@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import Navbar from '../Layouts/Navbar';
 import Footer from '../Layouts/Footer';
@@ -6,6 +6,7 @@ import TypesenseInstantSearchAdapter from 'typesense-instantsearch-adapter';
 import ProductHit from './components/ProductHit';
 import { InstantSearch, SearchBox, Hits, Pagination, Configure  } from 'react-instantsearch';
 import SidebarFilter from './components/SidebarFilter';
+import echo from '../echo'
 
 
 
@@ -32,7 +33,7 @@ const typesenseInstantsearchAdapter = new TypesenseInstantSearchAdapter({
 const searchClient = typesenseInstantsearchAdapter.searchClient;
 
 
-export default function Welcome({ auth, laravelVersion, phpVersion , cartItem}) {
+export default function Welcome({ auth, cartItem, sessionId}) {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -41,7 +42,26 @@ export default function Welcome({ auth, laravelVersion, phpVersion , cartItem}) 
 
 
 
-   console.log('Initial cart items:', cart);
+  useEffect(() => {
+    if (!sessionId) return;
+
+    console.log('Listening to public channel:', `cart.${sessionId}`);
+    
+    // Use public channel() instead of private()
+    const channel = echo.channel(`cart.${sessionId}`);
+    
+    channel.listen('.CartUpdated', (event) => {
+      console.log('Cart updated event received:', event);
+      setCart(event.cart); // Update cart with broadcasted data
+    });
+
+    return () => {
+      channel.stopListening('.CartUpdated');
+      echo.leave(`cart.${sessionId}`);
+    };
+  }, [sessionId]);
+
+
 
 
     const updateQuantity = (productId, change) => {
@@ -75,6 +95,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion , cartItem}) 
             cart ={cart}
             updateQuantity={updateQuantity}
             removeCartItem={removeCartItem}
+            sessionId={sessionId}
  />
 
 <section class="bg-white py-8 antialiased dark:bg-gray-800 md:py-16">

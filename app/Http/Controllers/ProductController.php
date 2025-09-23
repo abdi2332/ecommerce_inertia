@@ -8,26 +8,30 @@ use Inertia\Inertia;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Redis;
 
-
 class ProductController extends Controller
 {
-      protected function cartkey($userId): string
-   {
-       return "cart:{$userId}";
-   }
-
-    public function index()
+    protected function getCartIdentifier()
     {
-         $userId = auth()->id();
-        $cart = Redis::hgetall($this->cartKey($userId));
+        return auth()->check() ? auth()->id() : session()->getId();
+    }
+
+    protected function cartkey($identifier): string
+    {
+        $prefix = auth()->check() ? "cart:user:" : "cart:session:";
+        return $prefix . $identifier;
+    }
+
+    protected function getCartData($identifier)
+    {
+        $cart = Redis::hgetall($this->cartKey($identifier));
 
         if (empty($cart)) {
-            return response()->json(['cart' => []]);
+            return [];
         }
 
         $products = Product::whereIn('id', array_keys($cart))->get();
 
-        $cartWithDetails = $products->map(function ($product) use ($cart) {
+        return $products->map(function ($product) use ($cart) {
             $qty = (int) $cart[$product->id];
             return [
                 'id' => $product->id,
@@ -37,22 +41,28 @@ class ProductController extends Controller
                 'subtotal' => $product->price * $qty,
             ];
         });
+    }
 
-         $products = Product::with('category', 'images')->get();
+    public function index()
+    {
+        $identifier = $this->getCartIdentifier();
+        $cartData = $this->getCartData($identifier);
+        $sessionId = session()->getId();
+        
+        $products = Product::with('category', 'images')->get();
 
-    return Inertia::render('Welcome', [
-        'products' => $products,
-        'cartItem' => $cartWithDetails,
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-        'auth' => [
-            'user' => auth()->user() ? [
-                'id' => auth()->id(),
-                'name' => auth()->user()->name,
-                'email' => auth()->user()->email,
-            ] : null,
-        ],
-    ]);
-}
-
+        return Inertia::render('Welcome', [
+            'cartItem' => $cartData,
+            'sessionId' => $sessionId,
+            'laravelVersion' => Application::VERSION,
+            'phpVersion' => PHP_VERSION,
+            'auth' => [
+                'user' => auth()->user() ? [
+                    'id' => auth()->id(),
+                    'name' => auth()->user()->name,
+                    'email' => auth()->user()->email,
+                ] : null,
+            ],
+        ]);
+    }
 }
