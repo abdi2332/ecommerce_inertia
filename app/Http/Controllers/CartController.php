@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\CartUpdated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redis;
 use App\Models\Product;
@@ -9,24 +10,29 @@ use Inertia\Inertia;
 
 class CartController extends Controller
 {
-    
-   protected function cartkey($userId): string
-   {
-       return "cart:{$userId}";
-   }
-
-   public function index()
+    protected function getCartIdentifier()
     {
-        $userId = auth()->id();
-        $cart = Redis::hgetall($this->cartKey($userId));
+        // Use user ID if authenticated, session ID if guest
+        return auth()->check() ? auth()->id() : session()->getId();
+    }
+
+    protected function cartkey($identifier): string
+    {
+        $prefix = auth()->check() ? "cart:user:" : "cart:session:";
+        return $prefix . $identifier;
+    }
+
+    protected function getCartData($identifier)
+    {
+        $cart = Redis::hgetall($this->cartKey($identifier));
 
         if (empty($cart)) {
-            return response()->json(['cart' => []]);
+            return [];
         }
 
         $products = Product::whereIn('id', array_keys($cart))->get();
 
-        $cartWithDetails = $products->map(function ($product) use ($cart) {
+        return $products->map(function ($product) use ($cart) {
             $qty = (int) $cart[$product->id];
             return [
                 'id' => $product->id,
@@ -36,14 +42,19 @@ class CartController extends Controller
                 'subtotal' => $product->price * $qty,
             ];
         });
-        
+    }
 
-        return inertia::render('Welcome', ['cartItem' => $cartWithDetails]);
+    public function index()
+    {
+        $identifier = $this->getCartIdentifier();
+        $cartData = $this->getCartData($identifier);
+
+        return Inertia::render('Welcome', ['cartItem' => $cartData]);
     }
 
     public function update(Request $request)
     {
-         $userId = auth()->id();
+        $identifier = $this->getCartIdentifier();
         $productId = $request->input('product_id');
         $change = (int) $request->input('change', 1);
 
@@ -53,32 +64,43 @@ class CartController extends Controller
             return response()->json(['error' => 'Product not found'], 404);
         }
 
-        $qty = Redis::hincrby($this->cartKey($userId), $productId, $change);
+        $qty = Redis::hincrby($this->cartKey($identifier), $productId, $change);
 
         if ($qty <= 0) {
-            Redis::hdel($this->cartKey($userId), $productId);
+            Redis::hdel($this->cartKey($identifier), $productId);
         }
 
-        Redis::expire($this->cartKey($userId), 86400); 
+        Redis::expire($this->cartKey($identifier), 86400);
+        
+        // Get updated cart data and broadcast
+        $cartData = $this->getCartData($identifier);
+        broadcast(new CartUpdated(session()->getId(), $cartData))->toOthers();
 
-        return $this->index();
+        return response()->json(['success' => true, 'cart' => $cartData]);
     }
 
-    public function remove(Request $request){
-
-        $userId = auth()->id();
+    public function remove(Request $request)
+    {
+        $identifier = $this->getCartIdentifier();
         $productId = $request->input('product_id');
 
-        Redis::hdel($this->cartKey($userId), $productId);
-
-        return $this->index();
-    }
-
-    public function clear(){
-        $userId = auth()->id();
-        Redis::del($this->cartKey($userId));
-        return response()->json(['cart' => []]);
-    }
+        Redis::hdel($this->cartKey($identifier), $productId);
         
+        // Get updated cart data and broadcast
+        $cartData = $this->getCartData($identifier);
+        broadcast(new CartUpdated(session()->getId(), $cartData))->toOthers();
+
+        return response()->json(['success' => true, 'cart' => $cartData]);
+    }
+
+    public function clear()
+    {
+        $identifier = $this->getCartIdentifier();
+        Redis::del($this->cartKey($identifier));
+        
+        // Broadcast empty cart
+        broadcast(new CartUpdated(session()->getId(), []))->toOthers();
+        
+        return response()->json(['success' => true, 'cart' => []]);
+    }
 }
- 

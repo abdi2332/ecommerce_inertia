@@ -8,55 +8,61 @@ use Inertia\Inertia;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Redis;
 
-
 class ProductController extends Controller
 {
-      protected function cartkey($userId): string
-   {
-       return "cart:{$userId}";
-   }
-
-   public function index()
-{
-    $userId = auth()->id();
-    $cartWithDetails = [];
-
-    // Only attempt to fetch cart if user is logged in and Redis is available
-    if ($userId && class_exists('Redis')) {
-        $cart = Redis::hgetall($this->cartKey($userId)) ?: [];
-
-        if (!empty($cart)) {
-            $productsInCart = Product::whereIn('id', array_keys($cart))->get();
-            $cartWithDetails = $productsInCart->map(function ($product) use ($cart) {
-                $qty = (int) $cart[$product->id];
-                return [
-                    'id' => $product->id,
-                    'name' => $product->name,
-                    'price' => $product->price,
-                    'qty' => $qty,
-                    'subtotal' => $product->price * $qty,
-                ];
-            });
-        }
+    protected function getCartIdentifier()
+    {
+        return auth()->check() ? auth()->id() : session()->getId();
     }
 
-    // Fetch all products for display
-    $products = Product::with('category', 'images')->get();
+    protected function cartkey($identifier): string
+    {
+        $prefix = auth()->check() ? "cart:user:" : "cart:session:";
+        return $prefix . $identifier;
+    }
 
-    return Inertia::render('Welcome', [
-        'products' => $products,
-        'cartItem' => $cartWithDetails, // empty array if no cart
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-        'auth' => [
-            'user' => auth()->user() ? [
-                'id' => $userId,
-                'name' => auth()->user()->name,
-                'email' => auth()->user()->email,
-            ] : null,
-        ],
-    ]);
-}
+    protected function getCartData($identifier)
+    {
+        $cart = Redis::hgetall($this->cartKey($identifier));
 
+        if (empty($cart)) {
+            return [];
+        }
 
+        $products = Product::whereIn('id', array_keys($cart))->get();
+
+        return $products->map(function ($product) use ($cart) {
+            $qty = (int) $cart[$product->id];
+            return [
+                'id' => $product->id,
+                'name' => $product->name,
+                'price' => $product->price,
+                'qty' => $qty,
+                'subtotal' => $product->price * $qty,
+            ];
+        });
+    }
+
+    public function index()
+    {
+        $identifier = $this->getCartIdentifier();
+        $cartData = $this->getCartData($identifier);
+        $sessionId = session()->getId();
+        
+        $products = Product::with('category', 'images')->get();
+
+        return Inertia::render('Welcome', [
+            'cartItem' => $cartData,
+            'sessionId' => $sessionId,
+            'laravelVersion' => Application::VERSION,
+            'phpVersion' => PHP_VERSION,
+            'auth' => [
+                'user' => auth()->user() ? [
+                    'id' => auth()->id(),
+                    'name' => auth()->user()->name,
+                    'email' => auth()->user()->email,
+                ] : null,
+            ],
+        ]);
+    }
 }

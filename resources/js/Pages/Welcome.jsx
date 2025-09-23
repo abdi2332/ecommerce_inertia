@@ -1,62 +1,60 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import Navbar from '../Layouts/Navbar';
 import Footer from '../Layouts/Footer';
 import TypesenseInstantSearchAdapter from 'typesense-instantsearch-adapter';
 import ProductHit from './components/ProductHit';
-import { InstantSearch, SearchBox, Hits, Pagination, Configure  } from 'react-instantsearch';
+import { InstantSearch, SearchBox, Hits, Pagination, Configure } from 'react-instantsearch';
 import SidebarFilter from './components/SidebarFilter';
-
-
+import echo from '../echo';
 
 const typesenseInstantsearchAdapter = new TypesenseInstantSearchAdapter({
   server: {
-    apiKey: "xyz", // Be sure to use an API key that only allows search operations
-    nodes: [
-      {
-        host: "localhost",
-        port: "8108",
-        path: "", // Optional. Example: If you have your typesense mounted in localhost:8108/typesense, path should be equal to '/typesense'
-        protocol: "http",
-      },
-    ],
-    cacheSearchResultsForSeconds: 2 * 60, // Cache search results from server. Defaults to 2 minutes. Set to 0 to disable caching.
+    apiKey: "xyz",
+    nodes: [{ host: "localhost", port: "8108", protocol: "http" }],
+    cacheSearchResultsForSeconds: 2 * 60,
   },
-  // The following parameters are directly passed to Typesense's search API endpoint.
-  //  So you can pass any parameters supported by the search endpoint below.
-  //  query_by is required.
-  additionalSearchParameters: {
-    query_by: "name,description",
-  },
+  additionalSearchParameters: { query_by: "name,description" },
 });
+
 const searchClient = typesenseInstantsearchAdapter.searchClient;
 
-
-export default function Welcome({ auth, laravelVersion, phpVersion , cartItem}) {
+export default function Welcome({ auth, cartItem, sessionId }) {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [cart, setCart] = useState(cartItem || []);
-  const [searchCategory, setSearchCategory] = useState("");
 
+  useEffect(() => {
+    if (!sessionId) return;
 
+    console.log('Listening to public channel:', `cart.${sessionId}`);
+    
+    // Use public channel() instead of private()
+    const channel = echo.channel(`cart.${sessionId}`);
+    
+    channel.listen('.CartUpdated', (event) => {
+      console.log('Cart updated event received:', event);
+      setCart(event.cart); // Update cart with broadcasted data
+    });
 
-   console.log('Initial cart items:', cart);
+    return () => {
+      channel.stopListening('.CartUpdated');
+      echo.leave(`cart.${sessionId}`);
+    };
+  }, [sessionId]);
 
-
-    const updateQuantity = (productId, change) => {
-    setCart(prev =>
-    prev.map(item =>
+  const updateQuantity = (productId, change) => {
+    // Optimistic UI update
+    setCart(prev => prev.map(item =>
       item.id === productId ? { ...item, qty: Math.max(0, item.qty + change) } : item
-    )
-  );
-
+    ));
   }
 
-   const removeCartItem = (productId) => {
+  const removeCartItem = (productId) => {
+    // Optimistic UI update
     setCart(prev => prev.filter(item => item.id !== productId));
-   }
-  
+  }
 
 
   const toggleCart = () => setIsCartOpen(!isCartOpen);
