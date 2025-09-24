@@ -8,7 +8,7 @@ const Navbar = ({toggleCart, toggleUserDropdown, toggleMobileMenu,isCartOpen,isM
     const updateQty = (productId, change) => {
 
       updateQuantity(productId, change);
-    Inertia.post('/cart/update', { product_id: productId, change }, {
+    Inertia.post('/item/add', { product_id: productId, change }, {
       preserveScroll: true, // keeps scroll position
       onSuccess: () => {}, // Inertia will re-render page with updated props
     });

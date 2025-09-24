@@ -29,7 +29,8 @@ Route::get('/test-search', function(Request $request) {
 });
 
     Route::get('/cart', [CartController::class, 'index']);
-    Route::post('/cart/update', [CartController::class, 'update']); // +1 / -1
+    Route::post('/cart/add', [CartController::class, 'add']);
+    Route::post('/item/add', [CartController::class, 'updateItem']); // 
     Route::post('/cart/remove', [CartController::class, 'remove']);
     Route::post('/cart/clear', [CartController::class, 'clear']);
 

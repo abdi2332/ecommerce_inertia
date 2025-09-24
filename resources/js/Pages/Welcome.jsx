@@ -51,9 +51,26 @@ export default function Welcome({ auth, cartItem, sessionId}) {
     const channel = echo.channel(`cart.${sessionId}`);
     
     channel.listen('.CartUpdated', (event) => {
-      console.log('Cart updated event received:', event);
+      
       setCart(event.cart); // Update cart with broadcasted data
-    });
+    })
+    .listen('.CartItemAdded', (event) => {
+      setCart(prev => [...prev, {
+        id: event.product.id,
+        name: event.product.name,
+        price: event.product.price,
+        qty: event.quantity,
+      }])
+    })
+    .listen('.CartItemUpdated', (event) => {
+      console.log('CartItemUpdated event received:', event);
+      setCart(prev =>
+        prev.map(item =>
+          item.id === event.product.id ? { ...item, qty: event.quantity } : item
+        )
+      );
+    })
+
 
     return () => {
       channel.stopListening('.CartUpdated');

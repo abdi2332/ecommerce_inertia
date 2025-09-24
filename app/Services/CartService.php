@@ -2,6 +2,9 @@
 namespace App\Services;
 use Illuminate\Support\Facades\Redis;
 use App\Events\CartItemAdded;
+use App\Models\Product;
+use App\Events\CartItemUpdated;
+use App\Events\CartItemRemoved;
 
 class CartService
 {
@@ -9,14 +12,33 @@ class CartService
     {
         $newQty = Redis::hincrby("cart:{$sessionId}", $productId, $quantity);
         Redis::expire("cart:{$sessionId}", 86400); // 24h expiration
-        
+
         broadcast(new CartItemAdded($sessionId, $productId, $newQty, $this->getProductData($productId)));
+
+        return $newQty;
+    }
+
+    public function updateQuantity($sessionId, $productId, $quantity)
+    {
+        $newQty = Redis::hincrby("cart:{$sessionId}", $productId, $quantity);
+
+        logger('New Quantity: ' . $newQty);
+
+        if ($newQty <= 0) {
+            Redis::hdel("cart:{$sessionId}", $productId);
+
+            // broadcast(new CartItemRemoved($sessionId, $productId));
+            $newQty = 0;
+        }
+
+    broadcast(new CartItemUpdated( $sessionId, $productId, $newQty));
+
         return $newQty;
     }
 
     public function getProductData($productId)
     {
-        $product = \App\Models\Product::find($productId);
+        $product = Product::find($productId);
         if (!$product) {
             return null;
         }
