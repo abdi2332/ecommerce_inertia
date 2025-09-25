@@ -39,6 +39,8 @@ export default function Welcome({ auth, cartItem, sessionId}) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [cart, setCart] = useState(cartItem || []);
   const [searchCategory, setSearchCategory] = useState("");
+     
+
 
 
 
@@ -55,6 +57,7 @@ export default function Welcome({ auth, cartItem, sessionId}) {
       setCart(event.cart); // Update cart with broadcasted data
     })
     .listen('.CartItemAdded', (event) => {
+      console.log('CartItemAdded event received:', event);
       setCart(prev => [...prev, {
         id: event.product.id,
         name: event.product.name,
@@ -63,13 +66,20 @@ export default function Welcome({ auth, cartItem, sessionId}) {
       }])
     })
     .listen('.CartItemUpdated', (event) => {
+ 
       console.log('CartItemUpdated event received:', event);
-      setCart(prev =>
-        prev.map(item =>
-          item.id === event.product.id ? { ...item, qty: event.quantity } : item
-        )
-      );
-    })
+      setCart(prev => prev.map(item =>
+          item.id === event.product_id
+              ? { ...item, qty: event.quantity }
+              : item
+      ));
+  })
+  .listen('.CartItemRemoved', (event) => {
+
+ 
+    setCart(prev => prev.filter(item => item.id !== event.product_id));
+})
+
 
 
     return () => {
@@ -80,19 +90,6 @@ export default function Welcome({ auth, cartItem, sessionId}) {
 
 
 
-
-    const updateQuantity = (productId, change) => {
-    setCart(prev =>
-    prev.map(item =>
-      item.id === productId ? { ...item, qty: Math.max(0, item.qty + change) } : item
-    )
-  );
-
-  }
-
-   const removeCartItem = (productId) => {
-    setCart(prev => prev.filter(item => item.id !== productId));
-   }
   
 
 
@@ -110,8 +107,6 @@ export default function Welcome({ auth, cartItem, sessionId}) {
             isMobileMenuOpen={isMobileMenuOpen}
             isUserDropdownOpen={isUserDropdownOpen}
             cart ={cart}
-            updateQuantity={updateQuantity}
-            removeCartItem={removeCartItem}
             sessionId={sessionId}
  />
 
@@ -242,7 +237,8 @@ export default function Welcome({ auth, cartItem, sessionId}) {
 
     <Hits
     hitComponent={(props) => (
-    <ProductHit {...props} updateQuantity={updateQuantity} />
+    <ProductHit {...props} 
+     />
   )}
   classNames={{
     list: "mb-4 grid gap-4 sm:grid-cols-2 md:mb-8 lg:grid-cols-3 xl:grid-cols-3",

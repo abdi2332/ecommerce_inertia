@@ -2,12 +2,11 @@ import React from 'react'
 import { Inertia } from '@inertiajs/inertia';
 
 
-const ProductHit = ({hit, updateQuantity}) => {
+const ProductHit = ({hit,}) => {
 
 
    const updateQty = (productId, change) => {
-  
-        updateQuantity(productId, change);
+
       Inertia.post('/cart/add', { product_id: productId, change }, {
         preserveScroll: true, // keeps scroll position
         onSuccess: () => {}, // Inertia will re-render page with updated props

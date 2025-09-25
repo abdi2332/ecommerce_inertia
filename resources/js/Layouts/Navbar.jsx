@@ -7,7 +7,9 @@ const Navbar = ({toggleCart, toggleUserDropdown, toggleMobileMenu,isCartOpen,isM
   
     const updateQty = (productId, change) => {
 
-      updateQuantity(productId, change);
+      console.log('Updating product ID:', productId, 'with change:', change);
+
+      // updateQuantity(productId, change);
     Inertia.post('/item/add', { product_id: productId, change }, {
       preserveScroll: true, // keeps scroll position
       onSuccess: () => {}, // Inertia will re-render page with updated props
@@ -15,8 +17,8 @@ const Navbar = ({toggleCart, toggleUserDropdown, toggleMobileMenu,isCartOpen,isM
   };
 
   const removeItem = (productId) => {
-    removeCartItem(productId);
-    Inertia.post('/cart/remove', { product_id: productId }, { preserveScroll: true });
+    // removeCartItem(productId);
+    Inertia.post('/item/remove', { product_id: productId }, { preserveScroll: true });
   };
 
 

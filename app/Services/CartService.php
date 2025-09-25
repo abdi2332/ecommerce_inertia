@@ -15,6 +15,8 @@ class CartService
 
         broadcast(new CartItemAdded($sessionId, $productId, $newQty, $this->getProductData($productId)));
 
+        $sessionId = session()->getId(); // get current session ID
+
         return $newQty;
     }
 
@@ -22,18 +24,22 @@ class CartService
     {
         $newQty = Redis::hincrby("cart:{$sessionId}", $productId, $quantity);
 
-        logger('New Quantity: ' . $newQty);
-
         if ($newQty <= 0) {
             Redis::hdel("cart:{$sessionId}", $productId);
 
-            // broadcast(new CartItemRemoved($sessionId, $productId));
+            broadcast(new CartItemRemoved($sessionId, $productId));
             $newQty = 0;
         }
 
     broadcast(new CartItemUpdated( $sessionId, $productId, $newQty));
 
         return $newQty;
+    }
+
+    public function removeItem($sessionId, $productId){
+        Redis::hdel("cart:{$sessionId}", $productId);
+
+        broadcast( new CartItemRemoved( $sessionId, $productId));
     }
 
     public function getProductData($productId)

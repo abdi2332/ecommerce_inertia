@@ -31,8 +31,9 @@ Route::get('/test-search', function(Request $request) {
     Route::get('/cart', [CartController::class, 'index']);
     Route::post('/cart/add', [CartController::class, 'add']);
     Route::post('/item/add', [CartController::class, 'updateItem']); // 
-    Route::post('/cart/remove', [CartController::class, 'remove']);
-    Route::post('/cart/clear', [CartController::class, 'clear']);
+    Route::post('/item/remove', [CartController::class, 'removeItem']); //
+    // Route::post('/cart/remove', [CartController::class, 'remove']);
+    // Route::post('/cart/clear', [CartController::class, 'clear']);
 
 
     use Illuminate\Support\Facades\Redis;

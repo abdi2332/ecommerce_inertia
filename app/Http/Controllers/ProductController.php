@@ -10,20 +10,18 @@ use Illuminate\Support\Facades\Redis;
 
 class ProductController extends Controller
 {
+
+
     protected function getCartIdentifier()
     {
-        return auth()->check() ? auth()->id() : session()->getId();
-    }
+        $user = auth()->check() ? auth()->id() : session()->getId();
 
-    protected function cartkey($identifier): string
-    {
-        $prefix = auth()->check() ? "cart:user:" : "cart:session:";
-        return $prefix . $identifier;
+        return "cart:{$user}";
     }
 
     protected function getCartData($identifier)
     {
-        $cart = Redis::hgetall($this->cartKey($identifier));
+        $cart = Redis::hgetall($identifier);
 
         if (empty($cart)) {
             return [];
@@ -47,6 +45,7 @@ class ProductController extends Controller
     {
         $identifier = $this->getCartIdentifier();
         $cartData = $this->getCartData($identifier);
+
         $sessionId = session()->getId();
         
         $products = Product::with('category', 'images')->get();
