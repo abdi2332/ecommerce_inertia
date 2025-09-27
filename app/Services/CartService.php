@@ -8,7 +8,7 @@ use App\Events\CartItemRemoved;
 
 class CartService
 {
-    public function addItem($sessionId, $productId, $quantity = 1)
+public function addItem($sessionId, $productId, $quantity = 1)
     {
         $newQty = Redis::hincrby("cart:{$sessionId}", $productId, $quantity);
         Redis::expire("cart:{$sessionId}", 86400); // 24h expiration
@@ -30,7 +30,7 @@ class CartService
             broadcast(new CartItemRemoved($sessionId, $productId));
             $newQty = 0;
         }
-
+    
     broadcast(new CartItemUpdated( $sessionId, $productId, $newQty));
 
         return $newQty;

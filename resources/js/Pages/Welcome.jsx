@@ -57,7 +57,7 @@ export default function Welcome({ auth, cartItem, sessionId}) {
       setCart(event.cart); // Update cart with broadcasted data
     })
     .listen('.CartItemAdded', (event) => {
-      console.log('CartItemAdded event received:', event);
+ 
       setCart(prev => [...prev, {
         id: event.product.id,
         name: event.product.name,
@@ -65,15 +65,13 @@ export default function Welcome({ auth, cartItem, sessionId}) {
         qty: event.quantity,
       }])
     })
-    .listen('.CartItemUpdated', (event) => {
- 
-      console.log('CartItemUpdated event received:', event);
-      setCart(prev => prev.map(item =>
-          item.id === event.product_id
-              ? { ...item, qty: event.quantity }
-              : item
-      ));
-  })
+   .listen('.CartItemUpdated', (event) => {
+  setCart(prev => prev.map(item =>
+      item.id == event.product_id  // use loose equality
+          ? { ...item, qty: event.quantity }
+          : item
+  ));
+})
   .listen('.CartItemRemoved', (event) => {
 
  

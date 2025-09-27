@@ -18,15 +18,20 @@ class CartController extends Controller
     }
 
     public function add(Request $request)
-    {
-        $this->cartService->addItem(
-            session()->getId(),
-            $productId = $request->input('product_id'),
-            $change = (int) $request->input('change', 1),
-        );
-        
-        return Inertia::render('Welcome');
+{
+    $sessionId = session()->getId();
+    $productId = $request->input('product_id');
+    $change = (int) $request->input('change', 1);
+
+    if (Redis::hexists('cart:' . $sessionId, $productId)) {
+        $this->cartService->updateQuantity($sessionId, $productId, $change);
+    } else {
+        $this->cartService->addItem($sessionId, $productId, $change);
     }
+
+    return Inertia::render('Welcome');
+}
+
 
 
     public function updateItem(Request $request)
