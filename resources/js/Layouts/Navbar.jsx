@@ -1,8 +1,27 @@
 import {React, useState} from 'react'
+import { Link, usePage,  } from '@inertiajs/react';
+import { Inertia } from '@inertiajs/inertia';
 
 
-const Navbar = ({toggleCart, toggleUserDropdown, toggleMobileMenu,isCartOpen,isMobileMenuOpen,isUserDropdownOpen,cart,increaseQuantity,decreaseQuantity}) => {
+const Navbar = ({toggleCart, toggleUserDropdown, toggleMobileMenu,isCartOpen,isMobileMenuOpen,isUserDropdownOpen,cart,updateQuantity, removeCartItem }) => {
   
+    const updateQty = (productId, change) => {
+
+      console.log('Updating product ID:', productId, 'with change:', change);
+
+      // updateQuantity(productId, change);
+    Inertia.post('/item/add', { product_id: productId, change }, {
+      preserveScroll: true, // keeps scroll position
+      onSuccess: () => {}, // Inertia will re-render page with updated props
+    });
+  };
+
+  const removeItem = (productId) => {
+    // removeCartItem(productId);
+    Inertia.post('/item/remove', { product_id: productId }, { preserveScroll: true });
+  };
+
+
 
   return (
          <nav className="bg-white dark:bg-gray-800 antialiased">
@@ -81,24 +100,24 @@ const Navbar = ({toggleCart, toggleUserDropdown, toggleMobileMenu,isCartOpen,isM
           <button
             type="button"
             className="px-2 dark:bg-white py-1 text-sm font-bold border rounded hover:bg-gray-100 dark:hover:bg-gray-700"
-            onClick={() => decreaseQuantity(item.id)} // replace with decrease logic
+            onClick={() => updateQty(item.id,-1 )} // replace with decrease logic
           >
             -
           </button>
           <span className="text-sm font-normal text-gray-900 dark:text-white">
-            {item.quantity}
+            {item.qty}
           </span>
           <button
             type="button"
             className="px-2 py-1 dark:bg-white text-sm font-bold border rounded hover:bg-gray-100 dark:hover:bg-gray-700"
-            onClick={() => increaseQuantity(item.id)} // replace with increase logic
+            onClick={() => updateQty(item.id,+1)} // replace with increase logic
           >
             +
           </button>
         </div>
 
         {/* Remove button */}
-        <div className="flex items-center justify-end">
+        <div className="flex items-center justify-end" onClick={() => removeItem(item.id)}>
           <button 
             type="button" 
             className="text-red-600 hover:text-red-700 dark:text-red-500 dark:hover:text-red-600"

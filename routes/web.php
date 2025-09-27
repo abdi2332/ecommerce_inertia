@@ -7,6 +7,7 @@ use Inertia\Inertia;
 use App\Http\Controllers\ProductController;
 use Illuminate\Http\Request;
 use App\Models\Product;
+use App\Http\Controllers\CartController;
 
 Route::get('/', [ProductController::class, 'index'])->name('welcome');
 
@@ -26,5 +27,21 @@ Route::get('/test-search', function(Request $request) {
     $results = Product::search($query)->get();
     return response()->json($results);
 });
+
+    Route::get('/cart', [CartController::class, 'index']);
+    Route::post('/cart/add', [CartController::class, 'add']);
+    Route::post('/item/add', [CartController::class, 'updateItem']); // 
+    Route::post('/item/remove', [CartController::class, 'removeItem']); //
+    // Route::post('/cart/remove', [CartController::class, 'remove']);
+    // Route::post('/cart/clear', [CartController::class, 'clear']);
+
+
+    use Illuminate\Support\Facades\Redis;
+
+Route::get('/redis-test', function () {
+    Redis::set('test', 'ok');
+    return Redis::get('test');
+});
+
 
 require __DIR__.'/auth.php';

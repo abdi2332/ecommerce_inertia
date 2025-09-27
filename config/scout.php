@@ -198,7 +198,12 @@ return [
                        [
                             'name' => 'description',
                             'type' => 'string',
-                          ],
+                        ],
+                        [
+                            'name' => 'stock',
+                            'type' => 'int32',
+                        ],
+
                           [
                             'name' => 'price',
                             'type' => 'float',

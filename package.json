@@ -14,7 +14,7 @@
         "@tailwindcss/vite": "^4.0.0",
         "@vitejs/plugin-react": "^4.2.0",
         "autoprefixer": "^10.4.12",
-        "axios": "^1.8.2",
+        "axios": "^1.12.1",
         "concurrently": "^9.0.1",
         "laravel-echo": "^2.2.0",
         "laravel-vite-plugin": "^2.0.0",
@@ -27,6 +27,7 @@
     },
     "dependencies": {
         "@babel/runtime": "^7.28.3",
+        "@inertiajs/inertia": "^0.11.1",
         "react-instantsearch": "^7.16.2",
         "typesense-instantsearch-adapter": "^2.9.0"
     }

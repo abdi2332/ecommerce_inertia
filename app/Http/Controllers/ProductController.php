@@ -6,27 +6,62 @@ use Illuminate\Http\Request;
 use App\Models\Product;
 use Inertia\Inertia;
 use Illuminate\Foundation\Application;
-
+use Illuminate\Support\Facades\Redis;
 
 class ProductController extends Controller
 {
 
+
+    protected function getCartIdentifier()
+    {
+        $user = auth()->check() ? auth()->id() : session()->getId();
+
+        return "cart:{$user}";
+    }
+
+    protected function getCartData($identifier)
+    {
+        $cart = Redis::hgetall($identifier);
+
+        if (empty($cart)) {
+            return [];
+        }
+
+        $products = Product::whereIn('id', array_keys($cart))->get();
+
+        return $products->map(function ($product) use ($cart) {
+            $qty = (int) $cart[$product->id];
+            return [
+                'id' => $product->id,
+                'name' => $product->name,
+                'price' => $product->price,
+                'qty' => $qty,
+                'subtotal' => $product->price * $qty,
+            ];
+        });
+    }
+
     public function index()
     {
-         $products = Product::with('category', 'images')->get();
+        $identifier = $this->getCartIdentifier();
+        $cartData = $this->getCartData($identifier);
 
-    return Inertia::render('Welcome', [
-        'products' => $products,
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-        'auth' => [
-            'user' => auth()->user() ? [
-                'id' => auth()->id(),
-                'name' => auth()->user()->name,
-                'email' => auth()->user()->email,
-            ] : null,
-        ],
-    ]);
-}
+        $sessionId = session()->getId();
+        
+        $products = Product::with('category', 'images')->get();
 
+        return Inertia::render('Welcome', [
+            'cartItem' => $cartData,
+            'sessionId' => $sessionId,
+            'laravelVersion' => Application::VERSION,
+            'phpVersion' => PHP_VERSION,
+            'auth' => [
+                'user' => auth()->user() ? [
+                    'id' => auth()->id(),
+                    'name' => auth()->user()->name,
+                    'email' => auth()->user()->email,
+                ] : null,
+            ],
+        ]);
+    }
 }
