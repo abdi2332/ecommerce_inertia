@@ -7,7 +7,7 @@ const Navbar = ({toggleCart, toggleUserDropdown, toggleMobileMenu,isCartOpen,isM
   
     const updateQty = (productId, change) => {
 
-      console.log('Updating product ID:', productId, 'with change:', change);
+      
 
       // updateQuantity(productId, change);
     Inertia.post('/item/add', { product_id: productId, change }, {
