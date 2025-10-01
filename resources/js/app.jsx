@@ -1,5 +1,6 @@
 import '../css/app.css';
 import './bootstrap';
+import { StockProvider } from './Pages/components/StockProvider';
 
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
@@ -17,7 +18,11 @@ createInertiaApp({
     setup({ el, App, props }) {
         const root = createRoot(el);
 
-        root.render(<App {...props} />);
+        root.render(
+        <StockProvider>
+        <App {...props} />
+        </StockProvider>
+    );
     },
     progress: {
         color: '#4B5563',

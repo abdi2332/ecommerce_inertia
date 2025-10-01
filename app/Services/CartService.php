@@ -1,5 +1,6 @@
 <?php
 namespace App\Services;
+use App\Events\StockUpdated;
 use Illuminate\Support\Facades\Redis;
 use App\Events\CartItemAdded;
 use App\Models\Product;
@@ -17,6 +18,17 @@ public function addItem($sessionId, $productId, $quantity = 1)
 
         $sessionId = session()->getId(); // get current session ID
 
+        $oldStock = Product::where('id', $productId)->value('stock');
+
+        if ($oldStock !== null) {
+            $newStock = max(0, $oldStock - $quantity); 
+            Product::where('id', $productId)->update(['stock' => $newStock]);
+
+            logger('Stock updated for product ' . $productId . ': ' . $oldStock . ' -> ' . $newStock);
+
+            broadcast(new StockUpdated($newStock, $productId));
+
+        }
         return $newQty;
     }
 

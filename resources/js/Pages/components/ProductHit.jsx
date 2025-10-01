@@ -1,9 +1,10 @@
 import React from 'react'
 import { Inertia } from '@inertiajs/inertia';
+import { useStock } from './StockProvider';
 
 
 const ProductHit = ({hit,}) => {
-
+  const stock = useStock(hit.id, hit.stock);
 
    const updateQty = (productId, change) => {
 
@@ -84,7 +85,7 @@ const ProductHit = ({hit,}) => {
             </div>
 
             <p className="text-sm font-medium text-gray-900 dark:text-white">5.0</p>
-            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">({hit.stock})</p>
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{stock}</p>
           </div>
 
           <ul className="mt-2 flex items-center gap-4">
