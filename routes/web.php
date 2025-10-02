@@ -35,6 +35,8 @@ Route::get('/test-search', function(Request $request) {
     // Route::post('/cart/remove', [CartController::class, 'remove']);
     // Route::post('/cart/clear', [CartController::class, 'clear']);
 
+    Route::get('/products/{product}', [ProductController::class, 'detail'])->name('products.show');
+
 
     use Illuminate\Support\Facades\Redis;
 

@@ -34,14 +34,7 @@ const searchClient = typesenseInstantsearchAdapter.searchClient;
 
 
 export default function Welcome({ auth, cartItem, sessionId}) {
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [cart, setCart] = useState(cartItem || []);
-  const [searchCategory, setSearchCategory] = useState("");
-     
-
-
 
 
   useEffect(() => {
@@ -90,20 +83,10 @@ export default function Welcome({ auth, cartItem, sessionId}) {
 
   
 
-
-  const toggleCart = () => setIsCartOpen(!isCartOpen);
-  const toggleUserDropdown = () => setIsUserDropdownOpen(!isUserDropdownOpen);
-  const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
-
   return (
     <>
   <InstantSearch indexName="products" searchClient={searchClient}>
-    <Navbar toggleCart={toggleCart}
-            toggleUserDropdown={toggleUserDropdown}
-            toggleMobileMenu={toggleMobileMenu}
-            isCartOpen={isCartOpen}
-            isMobileMenuOpen={isMobileMenuOpen}
-            isUserDropdownOpen={isUserDropdownOpen}
+    <Navbar 
             cart ={cart}
             sessionId={sessionId}
  />

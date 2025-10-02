@@ -64,4 +64,13 @@ class ProductController extends Controller
             ],
         ]);
     }
+
+    public function detail($id){
+        $product = Product::with('category', 'images')->findOrFail($id);
+
+        return Inertia::render('ProductDetail', [
+            'product' => $product,
+        ]);
+        
+    }
 }
