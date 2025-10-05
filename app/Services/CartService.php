@@ -71,14 +71,14 @@ public function addItem($sessionId, $productId, $quantity = 1)
 
     }
 
-    protected function getCartIdentifier()
+    public function getCartIdentifier()
     {
         $user = auth()->check() ? auth()->id() : session()->getId();
 
         return "cart:{$user}";
     }
 
-    protected function getCartData($identifier)
+    public function getCartData($identifier)
     {
         $cart = Redis::hgetall($identifier);
 

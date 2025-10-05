@@ -1,13 +1,15 @@
 import { React, useState } from 'react'
 import { Link, usePage, } from '@inertiajs/react';
 import { Inertia } from '@inertiajs/inertia';
+import { useCart } from '@/Pages/components/CartProvider';
 
-
-const Navbar = ({ cart, }) => {
+const Navbar = () => {
 
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const {cart} = useCart();
+
 
 
   const toggleCart = () => setIsCartOpen(!isCartOpen);

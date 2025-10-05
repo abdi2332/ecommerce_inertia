@@ -20,7 +20,7 @@ export function StockProvider({ children }) {
 
     return () => {
       stockChannel.stopListening(".StockUpdated");
-    };
+    };	return React.useContext(CartContext)
   }, []);
 
   return (

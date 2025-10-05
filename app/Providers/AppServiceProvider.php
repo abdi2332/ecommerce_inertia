@@ -24,10 +24,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(CartService $cartService): void
     {
-        // Inertia::share([
-        //     'cart' => fn () => $cartService->getCart(),
-        //     'sessionId' => fn () => $cartService->getSessionId(),
-        // ]);
+        Inertia::share([
+            'cart' => fn () => $cartService->getCartData($cartService->getCartIdentifier()),
+            'sessionId' => fn () => session()->getId(),
+
+        ]);
         Vite::prefetch(concurrency: 3);
     }
 }
