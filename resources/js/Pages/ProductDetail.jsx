@@ -203,7 +203,7 @@ const ProductDetail = ({product,relatedProducts}) => {
     </div>
     <div class="mb-4 grid gap-4 sm:grid-cols-2 md:mb-8 lg:grid-cols-3 xl:grid-cols-4">
       {relatedProducts.map((relatedProduct) => (
-      <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+      <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800" key={relatedProduct.id}>
         <div class="h-56 w-full">
           <a href="#">
                <img className="mx-auto h-full"  src={relatedProduct.images?`${relatedProduct.images[0].image_path}`: 'https://flowbite.s3.amazonaws.com/blocks/e-commerce/imac-front.svg'}
