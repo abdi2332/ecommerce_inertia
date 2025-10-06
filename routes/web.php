@@ -8,6 +8,7 @@ use App\Http\Controllers\ProductController;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\CheckoutController;
 
 Route::get('/', [ProductController::class, 'index'])->name('welcome');
 
@@ -36,6 +37,7 @@ Route::get('/test-search', function(Request $request) {
     // Route::post('/cart/clear', [CartController::class, 'clear']);
 
     Route::get('/products/{product}', [ProductController::class, 'detail'])->name('products.show');
+    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
 
 
     use Illuminate\Support\Facades\Redis;

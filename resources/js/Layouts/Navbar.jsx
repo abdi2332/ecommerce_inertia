@@ -12,6 +12,7 @@ const Navbar = () => {
 
 
 
+
   const toggleCart = () => setIsCartOpen(!isCartOpen);
   const toggleUserDropdown = () => setIsUserDropdownOpen(!isUserDropdownOpen);
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -139,13 +140,17 @@ const Navbar = () => {
                     </div>
                   ))}
 
-                  <a
+                  {/* <a
                     href="#"
                     className="block w-full text-center rounded-lg bg-primary-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-primary-800 focus:outline-none focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
                     role="button"
                   >
                     Proceed to Checkout
-                  </a>
+                  </a> */}
+                     <Link href={`/checkout`} className="block w-full text-center rounded-lg bg-primary-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-primary-800 focus:outline-none focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+                     >
+                             Proceed to Checkout
+                            </Link>
                 </div>
               )}
 
