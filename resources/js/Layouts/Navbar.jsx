@@ -1,18 +1,27 @@
-import {React, useState} from 'react'
-import { Link, usePage,  } from '@inertiajs/react';
+import { React, useState } from 'react'
+import { Link, usePage, } from '@inertiajs/react';
 import { Inertia } from '@inertiajs/inertia';
+import { useCart } from '@/Pages/components/CartProvider';
+
+const Navbar = () => {
+
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const {cart} = useCart();
 
 
-const Navbar = ({toggleCart, toggleUserDropdown, toggleMobileMenu,isCartOpen,isMobileMenuOpen,isUserDropdownOpen,cart,updateQuantity, removeCartItem }) => {
-  
-    const updateQty = (productId, change) => {
 
-      console.log('Updating product ID:', productId, 'with change:', change);
 
-      // updateQuantity(productId, change);
+  const toggleCart = () => setIsCartOpen(!isCartOpen);
+  const toggleUserDropdown = () => setIsUserDropdownOpen(!isUserDropdownOpen);
+  const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+
+  const updateQty = (productId, change) => {
+    // updateQuantity(productId, change);
     Inertia.post('/item/add', { product_id: productId, change }, {
       preserveScroll: true, // keeps scroll position
-      onSuccess: () => {}, // Inertia will re-render page with updated props
+      onSuccess: () => { }, // Inertia will re-render page with updated props
     });
   };
 
@@ -24,189 +33,193 @@ const Navbar = ({toggleCart, toggleUserDropdown, toggleMobileMenu,isCartOpen,isM
 
 
   return (
-         <nav className="bg-white dark:bg-gray-800 antialiased">
-        <div className="max-w-screen-xl px-4 mx-auto 2xl:px-0 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-8">
-              <div className="shrink-0">
-                <a href="" title="" className="">
-                  <img className="block w-auto h-8 dark:hidden" src="https://flowbite.s3.amazonaws.com/blocks/e-commerce/logo-full.svg" alt="" />
-                  <img className="hidden w-auto h-8 dark:block" src="https://flowbite.s3.amazonaws.com/blocks/e-commerce/logo-full-dark.svg" alt="" />
+    <nav className="bg-white dark:bg-gray-800 antialiased">
+      <div className="max-w-screen-xl px-4 mx-auto 2xl:px-0 py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-8">
+            <div className="shrink-0">
+              <a href="" title="" className="">
+                <img className="block w-auto h-8 dark:hidden" src="https://flowbite.s3.amazonaws.com/blocks/e-commerce/logo-full.svg" alt="" />
+                <img className="hidden w-auto h-8 dark:block" src="https://flowbite.s3.amazonaws.com/blocks/e-commerce/logo-full-dark.svg" alt="" />
+              </a>
+            </div>
+
+            <ul className="hidden lg:flex items-center justify-start gap-6 md:gap-8 py-3 sm:justify-center">
+              <li>
+                <a href="#" className="flex text-sm font-medium text-gray-900 hover:text-primary-700 dark:text-white dark:hover:text-primary-500">
+                  Home
                 </a>
-              </div>
-
-              <ul className="hidden lg:flex items-center justify-start gap-6 md:gap-8 py-3 sm:justify-center">
-                <li>
-                  <a href="#" className="flex text-sm font-medium text-gray-900 hover:text-primary-700 dark:text-white dark:hover:text-primary-500">
-                    Home
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="flex text-sm font-medium text-gray-900 hover:text-primary-700 dark:text-white dark:hover:text-primary-500">
-                    Best Sellers
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="flex text-sm font-medium text-gray-900 hover:text-primary-700 dark:text-white dark:hover:text-primary-500">
-                    Gift Ideas
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-sm font-medium text-gray-900 hover:text-primary-700 dark:text-white dark:hover:text-primary-500">
-                    Today's Deals
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-sm font-medium text-gray-900 hover:text-primary-700 dark:text-white dark:hover:text-primary-500">
-                    Sell
-                  </a>
-                </li>
-              </ul>
-            </div>
-
-            <div className="flex items-center lg:space-x-2">
-              {/* Cart Dropdown */}
-              <div className="relative">
-                <button 
-                  onClick={toggleCart}
-                  type="button" 
-                  className="inline-flex items-center rounded-lg justify-center p-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm font-medium leading-none text-gray-900 dark:text-white"
-                >
-                  <span className="sr-only">Cart</span>
-                  <svg className="w-5 h-5 lg:me-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                    <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 4h1.5L9 16m0 0h8m-8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm-8.5-3h9.25L19 7H7.312"/>
-                  </svg> 
-                  <span className="hidden sm:flex">My Cart</span>
-                  <svg className="hidden sm:flex w-4 h-4 text-gray-900 dark:text-white ms-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                    <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 9-7 7-7-7"/>
-                  </svg>              
-                </button>
-
-{isCartOpen && (
-  <div className="absolute right-0 z-10 w-72 space-y-4 overflow-hidden rounded-lg bg-white p-4 antialiased shadow-lg dark:bg-gray-800">
-    {cart.map((item) => (
-      <div key={item.id} className="grid grid-cols-5 gap-2 items-center">
-        <div className="col-span-3">
-          <a href="#" className="text-sm font-semibold leading-none text-gray-900 dark:text-white hover:underline">
-            {item.name}
-          </a>
-          <p className="mt-0.5 text-sm font-normal text-gray-500 dark:text-gray-400">
-            ${item.price.toLocaleString()}
-          </p>
-        </div>
-
-        {/* Quantity Controls */}
-        <div className="flex items-center justify-center space-x-2">
-          <button
-            type="button"
-            className="px-2 dark:bg-white py-1 text-sm font-bold border rounded hover:bg-gray-100 dark:hover:bg-gray-700"
-            onClick={() => updateQty(item.id,-1 )} // replace with decrease logic
-          >
-            -
-          </button>
-          <span className="text-sm font-normal text-gray-900 dark:text-white">
-            {item.qty}
-          </span>
-          <button
-            type="button"
-            className="px-2 py-1 dark:bg-white text-sm font-bold border rounded hover:bg-gray-100 dark:hover:bg-gray-700"
-            onClick={() => updateQty(item.id,+1)} // replace with increase logic
-          >
-            +
-          </button>
-        </div>
-
-        {/* Remove button */}
-        <div className="flex items-center justify-end" onClick={() => removeItem(item.id)}>
-          <button 
-            type="button" 
-            className="text-red-600 hover:text-red-700 dark:text-red-500 dark:hover:text-red-600"
-            aria-label="Remove item"
-          >
-            <svg className="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
-              <path fillRule="evenodd" d="M2 12a10 10 0 1 1 20 0 10 10 0 0 1-20 0Zm7.7-3.7a1 1 0 0 0-1.4 1.4l2.3 2.3-2.3 2.3a1 1 0 1 0 1.4 1.4l2.3-2.3 2.3 2.3a1 1 0 0 0 1.4-1.4L13.4 12l2.3-2.3a1 1 0 0 0-1.4-1.4L12 10.6 9.7 8.3Z" clipRule="evenodd" />
-            </svg>
-          </button>
-        </div>
-      </div>
-    ))}
-
-    <a 
-      href="#" 
-      className="block w-full text-center rounded-lg bg-primary-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-primary-800 focus:outline-none focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800" 
-      role="button"
-    >
-      Proceed to Checkout
-    </a>
-  </div>
-)}
-
-              </div>
-
-              {/* User Dropdown */}
-              <div className="relative">
-                <button 
-                  onClick={toggleUserDropdown}
-                  type="button" 
-                  className="inline-flex items-center rounded-lg justify-center p-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm font-medium leading-none text-gray-900 dark:text-white"
-                >
-                  <svg className="w-5 h-5 me-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                    <path stroke="currentColor" strokeWidth="2" d="M7 17v1a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1a3 3 0 0 0-3-3h-4a3 3 0 0 0-3 3Zm8-9a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
-                  </svg>              
-                  Account
-                  <svg className="w-4 h-4 text-gray-900 dark:text-white ms-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                    <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 9-7 7-7-7"/>
-                  </svg> 
-                </button>
-
-                {isUserDropdownOpen && (
-                  <div className="absolute right-0 z-10 w-56 divide-y divide-gray-100 overflow-hidden overflow-y-auto rounded-lg bg-white antialiased shadow dark:divide-gray-600 dark:bg-gray-700">
-                    <ul className="p-2 text-start text-sm font-medium text-gray-900 dark:text-white">
-                      <li><a href="#" className="inline-flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">My Account</a></li>
-                      <li><a href="#" className="inline-flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">My Orders</a></li>
-                      <li><a href="#" className="inline-flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">Settings</a></li>
-                      <li><a href="#" className="inline-flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">Favourites</a></li>
-                      <li><a href="#" className="inline-flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">Delivery Addresses</a></li>
-                      <li><a href="#" className="inline-flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">Billing Data</a></li>
-                    </ul>
-                
-                    <div className="p-2 text-sm font-medium text-gray-900 dark:text-white">
-                      <a href="#" className="inline-flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">Sign Out</a>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Mobile Menu Button */}
-              <button 
-                onClick={toggleMobileMenu}
-                type="button" 
-                aria-controls="ecommerce-navbar-menu-1" 
-                className="inline-flex lg:hidden items-center justify-center hover:bg-gray-100 rounded-md dark:hover:bg-gray-700 p-2 text-gray-900 dark:text-white"
-              >
-                <span className="sr-only">Open Menu</span>
-                <svg className="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                  <path stroke="currentColor" strokeLinecap="round" strokeWidth="2" d="M5 7h14M5 12h14M5 17h14"/>
-                </svg>                
-              </button>
-            </div>
+              </li>
+              <li>
+                <a href="#" className="flex text-sm font-medium text-gray-900 hover:text-primary-700 dark:text-white dark:hover:text-primary-500">
+                  Best Sellers
+                </a>
+              </li>
+              <li>
+                <a href="#" className="flex text-sm font-medium text-gray-900 hover:text-primary-700 dark:text-white dark:hover:text-primary-500">
+                  Gift Ideas
+                </a>
+              </li>
+              <li>
+                <a href="#" className="text-sm font-medium text-gray-900 hover:text-primary-700 dark:text-white dark:hover:text-primary-500">
+                  Today's Deals
+                </a>
+              </li>
+              <li>
+                <a href="#" className="text-sm font-medium text-gray-900 hover:text-primary-700 dark:text-white dark:hover:text-primary-500">
+                  Sell
+                </a>
+              </li>
+            </ul>
           </div>
 
-          {/* Mobile Menu */}
-          {isMobileMenuOpen && (
-            <div id="ecommerce-navbar-menu-1" className="bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border border-gray-200 rounded-lg py-3 px-4 mt-4">
-              <ul className="text-gray-900 dark:text-white text-sm font-medium space-y-3">
-                <li><a href="#" className="hover:text-primary-700 dark:hover:text-primary-500">Home</a></li>
-                <li><a href="#" className="hover:text-primary-700 dark:hover:text-primary-500">Best Sellers</a></li>
-                <li><a href="#" className="hover:text-primary-700 dark:hover:text-primary-500">Gift Ideas</a></li>
-                <li><a href="#" className="hover:text-primary-700 dark:hover:text-primary-500">Games</a></li>
-                <li><a href="#" className="hover:text-primary-700 dark:hover:text-primary-500">Electronics</a></li>
-                <li><a href="#" className="hover:text-primary-700 dark:hover:text-primary-500">Home & Garden</a></li>
-              </ul>
+          <div className="flex items-center lg:space-x-2">
+            {/* Cart Dropdown */}
+            <div className="relative">
+              <button
+                onClick={toggleCart}
+                type="button"
+                className="inline-flex items-center rounded-lg justify-center p-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm font-medium leading-none text-gray-900 dark:text-white"
+              >
+                <span className="sr-only">Cart</span>
+                <svg className="w-5 h-5 lg:me-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                  <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 4h1.5L9 16m0 0h8m-8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm-8.5-3h9.25L19 7H7.312" />
+                </svg>
+                <span className="hidden sm:flex">My Cart</span>
+                <svg className="hidden sm:flex w-4 h-4 text-gray-900 dark:text-white ms-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                  <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 9-7 7-7-7" />
+                </svg>
+              </button>
+
+              {isCartOpen && (
+                <div className="absolute right-0 z-10 w-72 space-y-4 overflow-hidden rounded-lg bg-white p-4 antialiased shadow-lg dark:bg-gray-800">
+                  {cart.map((item) => (
+                    <div key={item.id} className="grid grid-cols-5 gap-2 items-center">
+                      <div className="col-span-3">
+                        <a href="#" className="text-sm font-semibold leading-none text-gray-900 dark:text-white hover:underline">
+                          {item.name}
+                        </a>
+                        <p className="mt-0.5 text-sm font-normal text-gray-500 dark:text-gray-400">
+                          ${item.price.toLocaleString()}
+                        </p>
+                      </div>
+
+                      {/* Quantity Controls */}
+                      <div className="flex items-center justify-center space-x-2">
+                        <button
+                          type="button"
+                          className="px-2 dark:bg-white py-1 text-sm font-bold border rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+                          onClick={() => updateQty(item.id, -1)} // replace with decrease logic
+                        >
+                          -
+                        </button>
+                        <span className="text-sm font-normal text-gray-900 dark:text-white">
+                          {item.qty}
+                        </span>
+                        <button
+                          type="button"
+                          className="px-2 py-1 dark:bg-white text-sm font-bold border rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+                          onClick={() => updateQty(item.id, +1)} // replace with increase logic
+                        >
+                          +
+                        </button>
+                      </div>
+
+                      {/* Remove button */}
+                      <div className="flex items-center justify-end" onClick={() => removeItem(item.id)}>
+                        <button
+                          type="button"
+                          className="text-red-600 hover:text-red-700 dark:text-red-500 dark:hover:text-red-600"
+                          aria-label="Remove item"
+                        >
+                          <svg className="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                            <path fillRule="evenodd" d="M2 12a10 10 0 1 1 20 0 10 10 0 0 1-20 0Zm7.7-3.7a1 1 0 0 0-1.4 1.4l2.3 2.3-2.3 2.3a1 1 0 1 0 1.4 1.4l2.3-2.3 2.3 2.3a1 1 0 0 0 1.4-1.4L13.4 12l2.3-2.3a1 1 0 0 0-1.4-1.4L12 10.6 9.7 8.3Z" clipRule="evenodd" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* <a
+                    href="#"
+                    className="block w-full text-center rounded-lg bg-primary-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-primary-800 focus:outline-none focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+                    role="button"
+                  >
+                    Proceed to Checkout
+                  </a> */}
+                     <Link href={`/checkout`} className="block w-full text-center rounded-lg bg-primary-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-primary-800 focus:outline-none focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+                     >
+                             Proceed to Checkout
+                            </Link>
+                </div>
+              )}
+
             </div>
-          )}
+
+            {/* User Dropdown */}
+            <div className="relative">
+              <button
+                onClick={toggleUserDropdown}
+                type="button"
+                className="inline-flex items-center rounded-lg justify-center p-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm font-medium leading-none text-gray-900 dark:text-white"
+              >
+                <svg className="w-5 h-5 me-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                  <path stroke="currentColor" strokeWidth="2" d="M7 17v1a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1a3 3 0 0 0-3-3h-4a3 3 0 0 0-3 3Zm8-9a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                </svg>
+                Account
+                <svg className="w-4 h-4 text-gray-900 dark:text-white ms-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                  <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 9-7 7-7-7" />
+                </svg>
+              </button>
+
+              {isUserDropdownOpen && (
+                <div className="absolute right-0 z-10 w-56 divide-y divide-gray-100 overflow-hidden overflow-y-auto rounded-lg bg-white antialiased shadow dark:divide-gray-600 dark:bg-gray-700">
+                  <ul className="p-2 text-start text-sm font-medium text-gray-900 dark:text-white">
+                    <li><a href="#" className="inline-flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">My Account</a></li>
+                    <li><a href="#" className="inline-flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">My Orders</a></li>
+                    <li><a href="#" className="inline-flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">Settings</a></li>
+                    <li><a href="#" className="inline-flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">Favourites</a></li>
+                    <li><a href="#" className="inline-flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">Delivery Addresses</a></li>
+                    <li><a href="#" className="inline-flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">Billing Data</a></li>
+                  </ul>
+
+                  <div className="p-2 text-sm font-medium text-gray-900 dark:text-white">
+                    <a href="#" className="inline-flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">Sign Out</a>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={toggleMobileMenu}
+              type="button"
+              aria-controls="ecommerce-navbar-menu-1"
+              className="inline-flex lg:hidden items-center justify-center hover:bg-gray-100 rounded-md dark:hover:bg-gray-700 p-2 text-gray-900 dark:text-white"
+            >
+              <span className="sr-only">Open Menu</span>
+              <svg className="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                <path stroke="currentColor" strokeLinecap="round" strokeWidth="2" d="M5 7h14M5 12h14M5 17h14" />
+              </svg>
+            </button>
+          </div>
         </div>
-      </nav>
+
+        {/* Mobile Menu */}
+        {isMobileMenuOpen && (
+          <div id="ecommerce-navbar-menu-1" className="bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border border-gray-200 rounded-lg py-3 px-4 mt-4">
+            <ul className="text-gray-900 dark:text-white text-sm font-medium space-y-3">
+              <li><a href="#" className="hover:text-primary-700 dark:hover:text-primary-500">Home</a></li>
+              <li><a href="#" className="hover:text-primary-700 dark:hover:text-primary-500">Best Sellers</a></li>
+              <li><a href="#" className="hover:text-primary-700 dark:hover:text-primary-500">Gift Ideas</a></li>
+              <li><a href="#" className="hover:text-primary-700 dark:hover:text-primary-500">Games</a></li>
+              <li><a href="#" className="hover:text-primary-700 dark:hover:text-primary-500">Electronics</a></li>
+              <li><a href="#" className="hover:text-primary-700 dark:hover:text-primary-500">Home & Garden</a></li>
+            </ul>
+          </div>
+        )}
+      </div>
+    </nav>
   )
 }
 

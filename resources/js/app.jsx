@@ -1,6 +1,7 @@
 import '../css/app.css';
 import './bootstrap';
-
+import { StockProvider } from './Pages/components/StockProvider';
+import { CartProvider } from './Pages/components/CartProvider';
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
@@ -17,7 +18,18 @@ createInertiaApp({
     setup({ el, App, props }) {
         const root = createRoot(el);
 
-        root.render(<App {...props} />);
+        console.log('Inertia props:', props.initialPage.props.cart); // 
+
+        root.render(
+     <StockProvider>
+        <CartProvider
+          initialCart={props.initialPage.props.cart}        // from Laravel Inertia::share
+          sessionId={props.initialPage.props.sessionId}     // from Laravel session
+        >
+          <App {...props} />
+        </CartProvider>
+      </StockProvider>
+    );
     },
     progress: {
         color: '#4B5563',

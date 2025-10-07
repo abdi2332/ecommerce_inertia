@@ -1,9 +1,11 @@
 import React from 'react'
-import { Inertia } from '@inertiajs/inertia';
+import { Inertia, } from '@inertiajs/inertia';
+import { useStock } from './StockProvider';
+import { Link } from '@inertiajs/react';
 
 
 const ProductHit = ({hit,}) => {
-
+  const stock = useStock(hit.id, hit.stock);
 
    const updateQty = (productId, change) => {
 
@@ -58,7 +60,10 @@ const ProductHit = ({hit,}) => {
             </div>
           </div>
 
-          <a href="#" className="text-lg font-semibold leading-tight text-gray-900 hover:underline dark:text-white">{hit.name}</a>
+          {/* <a href="#" className="text-lg font-semibold leading-tight text-gray-900 hover:underline dark:text-white">{hit.name}</a> */}
+          <Link href={`/products/${hit.id}`} className="text-lg font-semibold leading-tight text-gray-900 hover:underline dark:text-white">
+           {hit.name}
+          </Link>
 
           <div className="mt-2 flex items-center gap-2">
             <div className="flex items-center">
@@ -84,7 +89,7 @@ const ProductHit = ({hit,}) => {
             </div>
 
             <p className="text-sm font-medium text-gray-900 dark:text-white">5.0</p>
-            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">({hit.stock})</p>
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{stock}</p>
           </div>
 
           <ul className="mt-2 flex items-center gap-4">

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import Navbar from '../Layouts/Navbar';
 import Footer from '../Layouts/Footer';
 import TypesenseInstantSearchAdapter from 'typesense-instantsearch-adapter';
@@ -34,77 +34,59 @@ const searchClient = typesenseInstantsearchAdapter.searchClient;
 
 
 export default function Welcome({ auth, cartItem, sessionId}) {
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [cart, setCart] = useState(cartItem || []);
-  const [searchCategory, setSearchCategory] = useState("");
-     
 
 
+//   useEffect(() => {
+//     if (!sessionId) return;
 
-
-  useEffect(() => {
-    if (!sessionId) return;
-
-    console.log('Listening to public channel:', `cart.${sessionId}`);
+//     console.log('Listening to public channel:', `cart.${sessionId}`);
     
-    // Use public channel() instead of private()
-    const channel = echo.channel(`cart.${sessionId}`);
+//     // Use public channel() instead of private()
+//     const channel = echo.channel(`cart.${sessionId}`);
     
-    channel.listen('.CartUpdated', (event) => {
+//     channel.listen('.CartUpdated', (event) => {
       
-      setCart(event.cart); // Update cart with broadcasted data
-    })
-    .listen('.CartItemAdded', (event) => {
+//       setCart(event.cart); // Update cart with broadcasted data
+//     })
+//     .listen('.CartItemAdded', (event) => {
  
-      setCart(prev => [...prev, {
-        id: event.product.id,
-        name: event.product.name,
-        price: event.product.price,
-        qty: event.quantity,
-      }])
-    })
-   .listen('.CartItemUpdated', (event) => {
-  setCart(prev => prev.map(item =>
-      item.id == event.product_id  // use loose equality
-          ? { ...item, qty: event.quantity }
-          : item
-  ));
-})
-  .listen('.CartItemRemoved', (event) => {
+//       setCart(prev => [...prev, {
+//         id: event.product.id,
+//         name: event.product.name,
+//         price: event.product.price,
+//         qty: event.quantity,
+//       }])
+//     })
+//    .listen('.CartItemUpdated', (event) => {
+//   setCart(prev => prev.map(item =>
+//       item.id == event.product_id  // use loose equality
+//           ? { ...item, qty: event.quantity }
+//           : item
+//   ));
+// })
+//   .listen('.CartItemRemoved', (event) => {
 
  
-    setCart(prev => prev.filter(item => item.id !== event.product_id));
-})
+//     setCart(prev => prev.filter(item => item.id !== event.product_id));
+// })
 
 
 
-    return () => {
-      channel.stopListening('.CartUpdated');
-      echo.leave(`cart.${sessionId}`);
-    };
-  }, [sessionId]);
+//     return () => {
+//       channel.stopListening('.CartUpdated');
+//       echo.leave(`cart.${sessionId}`);
+//     };
+//   }, [sessionId]);
 
 
 
   
 
-
-  const toggleCart = () => setIsCartOpen(!isCartOpen);
-  const toggleUserDropdown = () => setIsUserDropdownOpen(!isUserDropdownOpen);
-  const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
-
   return (
     <>
   <InstantSearch indexName="products" searchClient={searchClient}>
-    <Navbar toggleCart={toggleCart}
-            toggleUserDropdown={toggleUserDropdown}
-            toggleMobileMenu={toggleMobileMenu}
-            isCartOpen={isCartOpen}
-            isMobileMenuOpen={isMobileMenuOpen}
-            isUserDropdownOpen={isUserDropdownOpen}
-            cart ={cart}
+    <Navbar 
             sessionId={sessionId}
  />
 

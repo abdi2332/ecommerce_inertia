@@ -1,5 +1,6 @@
 <?php
 namespace App\Services;
+use App\Events\StockUpdated;
 use Illuminate\Support\Facades\Redis;
 use App\Events\CartItemAdded;
 use App\Models\Product;
@@ -15,8 +16,20 @@ public function addItem($sessionId, $productId, $quantity = 1)
 
         broadcast(new CartItemAdded($sessionId, $productId, $newQty, $this->getProductData($productId)));
 
-        $sessionId = session()->getId(); // get current session ID
+        // this is the broadcast for stock update on checkout because we want to update stock only when user checkout because user can add to cart but not buy
+        // $sessionId = session()->getId(); // get current session ID
 
+        // $oldStock = Product::where('id', $productId)->value('stock');
+
+        // if ($oldStock !== null) {
+        //     $newStock = max(0, $oldStock - $quantity); 
+        //     Product::where('id', $productId)->update(['stock' => $newStock]);
+
+        //     logger('Stock updated for product ' . $productId . ': ' . $oldStock . ' -> ' . $newStock);
+
+        //     broadcast(new StockUpdated($newStock, $productId));
+
+        // }
         return $newQty;
     }
 
@@ -56,6 +69,35 @@ public function addItem($sessionId, $productId, $quantity = 1)
         ];
     
 
+    }
+
+    public function getCartIdentifier()
+    {
+        $user = auth()->check() ? auth()->id() : session()->getId();
+
+        return "cart:{$user}";
+    }
+
+    public function getCartData($identifier)
+    {
+        $cart = Redis::hgetall($identifier);
+
+        if (empty($cart)) {
+            return [];
+        }
+
+        $products = Product::whereIn('id', array_keys($cart))->get();
+
+        return $products->map(function ($product) use ($cart) {
+            $qty = (int) $cart[$product->id];
+            return [
+                'id' => $product->id,
+                'name' => $product->name,
+                'price' => $product->price,
+                'qty' => $qty,
+                'subtotal' => $product->price * $qty,
+            ];
+        });
     }
  
 }
