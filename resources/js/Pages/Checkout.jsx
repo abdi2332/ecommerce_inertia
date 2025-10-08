@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import Footer from "@/Layouts/Footer";
 import Chapaimage from '../../../public/assets/images/chapa/images.jpeg'
+import { useForm } from "@inertiajs/react";
 
 const Checkout = ({ totalCost }) => {
-  const [form, setForm] = useState({
+   const { data, setData, post, processing, errors } = useForm({
     your_name: "",
     your_email: "",
     phone: "",
@@ -14,18 +15,28 @@ const Checkout = ({ totalCost }) => {
     payment_method: "chapa", // default selected
   });
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    post(route('checkout.store'));
+  };
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setData(name, value);
+
+    post(route('checkout.store'), {
+      onSuccess: (page) => {
+
+        Inertia.visit(route('order.success')); 
+  
+      },
+    });
+
   };
 
   return (
     <>
     <section className="bg-white py-8 antialiased dark:bg-gray-800 md:py-16">
-      <form action="#" className="mx-auto max-w-screen-xl px-4 2xl:px-0">
+      <form onSubmit={handleSubmit} className="mx-auto max-w-screen-xl px-4 2xl:px-0">
         <ol className="items-center flex w-full max-w-2xl text-center text-sm font-medium text-gray-500 dark:text-gray-400 sm:text-base">
           <li className="after:border-1 flex items-center text-primary-700 after:mx-6 after:hidden after:h-1 after:w-full after:border-b after:border-gray-200 dark:text-primary-500 dark:after:border-gray-700 sm:after:inline-block sm:after:content-[''] md:w-full xl:after:mx-10">
             <span className="flex items-center after:mx-2 after:text-gray-200 after:content-['/'] dark:after:text-gray-500 sm:after:hidden">
@@ -115,7 +126,7 @@ const Checkout = ({ totalCost }) => {
                     type="text"
                     id="your_name"
                     name="your_name"
-                    value={form.your_name}
+                    value={data.your_name}
                     onChange={handleChange}
                     placeholder="Bonnie Green"
                     required
@@ -134,7 +145,7 @@ const Checkout = ({ totalCost }) => {
                     type="email"
                     id="your_email"
                     name="your_email"
-                    value={form.your_email}
+                    value={data.your_email}
                     onChange={handleChange}
                     placeholder="name@flowbite.com"
                     required
@@ -152,7 +163,7 @@ const Checkout = ({ totalCost }) => {
                   <select
                     id="city"
                     name="city"
-                    value={form.city}
+                    value={data.city}
                     onChange={handleChange}
                     className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-800 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-primary-500 dark:focus:ring-primary-500"
                   >
@@ -173,7 +184,7 @@ const Checkout = ({ totalCost }) => {
                     type="tel"
                     id="phone"
                     name="phone"
-                    value={form.phone}
+                    value={data.phone}
                     onChange={handleChange}
                     placeholder="+251973148191"
                     required
@@ -192,7 +203,7 @@ const Checkout = ({ totalCost }) => {
                     type="text"
                     id="company_name"
                     name="company_name"
-                    value={form.company_name}
+                    value={data.company_name}
                     onChange={handleChange}
                     placeholder="Flowbite LLC"
                     className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-800 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-primary-500 dark:focus:ring-primary-500"
@@ -210,7 +221,7 @@ const Checkout = ({ totalCost }) => {
                     type="text"
                     id="vat_number"
                     name="vat_number"
-                    value={form.vat_number}
+                    value={data.vat_number}
                     onChange={handleChange}
                     placeholder="DE42313253"
                     className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-800 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-primary-500 dark:focus:ring-primary-500"
@@ -233,7 +244,7 @@ const Checkout = ({ totalCost }) => {
                       type="radio"
                       name="payment_method"
                       value="chapa"
-                      checked={form.payment_method === "chapa"}
+                      checked={data.payment_method === "chapa"}
                       onChange={handleChange}
                       className="h-4 w-4 text-primary-600 focus:ring-primary-600"
                     />
@@ -260,7 +271,7 @@ const Checkout = ({ totalCost }) => {
                       type="radio"
                       name="payment_method"
                       value="delivery"
-                      checked={form.payment_method === "delivery"}
+                      checked={data.payment_method === "delivery"}
                       onChange={handleChange}
                       className="h-4 w-4 text-primary-600 focus:ring-primary-600"
                     />
@@ -290,7 +301,7 @@ const Checkout = ({ totalCost }) => {
                   type="text"
                   id="voucher"
                   name="voucher"
-                  value={form.voucher}
+                  value={data.voucher}
                   onChange={handleChange}
                   placeholder=""
                   className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-800 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-primary-500 dark:focus:ring-primary-500"
@@ -360,6 +371,7 @@ const Checkout = ({ totalCost }) => {
               <button
                 type="submit"
                 className="flex w-full items-center justify-center rounded-lg bg-primary-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-primary-800 focus:outline-none focus:ring-4  focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+                
               >
                 Proceed to Payment
               </button>
