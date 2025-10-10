@@ -38,6 +38,7 @@ Route::get('/test-search', function(Request $request) {
 
     Route::get('/products/{product}', [ProductController::class, 'detail'])->name('products.show');
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
+    Route::post('/chekout/store', [CheckoutController::class, 'store'])->name('checkout.store');
 
 
     use Illuminate\Support\Facades\Redis;

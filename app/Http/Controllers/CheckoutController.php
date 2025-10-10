@@ -30,6 +30,8 @@ class CheckoutController extends Controller
 
     public function store(Request $request)
     {
+
+   
         $validated = $request->validate([
             'full_name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
@@ -43,6 +45,10 @@ class CheckoutController extends Controller
             'cart.*.quantity' => 'required|integer|min:1',
             'cart.*.price' => 'required|numeric|min:0',
         ]);
+
+        logger($request->all());
+
+         
 
         DB::beginTransaction();
 
