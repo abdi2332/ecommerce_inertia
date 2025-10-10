@@ -12,7 +12,8 @@ const Checkout = ({ totalCost }) => {
     company_name: "",
     vat_number: "",
     voucher: "",
-    payment_method: "chapa", // default selected
+    payment_method: "chapa",
+    total:totalCost.total
   });
 
   const handleSubmit = (e) => {
@@ -26,7 +27,7 @@ const Checkout = ({ totalCost }) => {
     post(route('checkout.store'), {
       onSuccess: (page) => {
 
-        Inertia.visit(route('order.success')); 
+        // Inertia.visit(route('order.success')); 
   
       },
     });
