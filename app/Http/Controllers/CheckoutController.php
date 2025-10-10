@@ -30,23 +30,23 @@ class CheckoutController extends Controller
 
     public function store(Request $request)
     {
-
+            logger($request->all());
    
         $validated = $request->validate([
             'full_name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
             'region' => 'required|string|max:255',
             'city' => 'required|string|max:255',
-            'address_line' => 'required|string|max:255',
+            // 'address_line' => 'required|string|max:255',
             'is_default' => 'boolean',
             'payment_method' => 'required|in:chapa,telebirr,cod',
-            'cart' => 'required|array|min:1',
-            'cart.*.product_id' => 'required|integer|exists:products,id',
-            'cart.*.quantity' => 'required|integer|min:1',
-            'cart.*.price' => 'required|numeric|min:0',
+            // 'cart' => 'required|array|min:1',
+            // 'cart.*.product_id' => 'required|integer|exists:products,id',
+            // 'cart.*.quantity' => 'required|integer|min:1',
+            // 'cart.*.price' => 'required|numeric|min:0',
         ]);
 
-        logger($request->all());
+      
 
          
 

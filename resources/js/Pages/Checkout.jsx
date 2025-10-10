@@ -2,18 +2,21 @@ import React, { useState } from "react";
 import Footer from "@/Layouts/Footer";
 import Chapaimage from '../../../public/assets/images/chapa/images.jpeg'
 import { useForm } from "@inertiajs/react";
+import { useCart } from "./components/CartProvider";
 
 const Checkout = ({ totalCost }) => {
+    const {cart} = useCart();
    const { data, setData, post, processing, errors } = useForm({
-    your_name: "",
-    your_email: "",
+    full_name: "",
+    email: "",
     phone: "",
     city: "Yeka",
     company_name: "",
     vat_number: "",
     voucher: "",
     payment_method: "chapa",
-    total:totalCost.total
+    total:totalCost.total,
+    cart:cart
   });
 
   const handleSubmit = (e) => {
@@ -23,6 +26,8 @@ const Checkout = ({ totalCost }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setData(name, value);
+
+    console.log(data);
 
     post(route('checkout.store'), {
       onSuccess: (page) => {
@@ -118,16 +123,16 @@ const Checkout = ({ totalCost }) => {
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label
-                    htmlFor="your_name"
+                    htmlFor="full_name"
                     className="mb-2 block text-sm font-medium text-gray-800 dark:text-white"
                   >
                     Your name
                   </label>
                   <input
                     type="text"
-                    id="your_name"
-                    name="your_name"
-                    value={data.your_name}
+                    id="full_name"
+                    name="full_name"
+                    value={data.full_name}
                     onChange={handleChange}
                     placeholder="Bonnie Green"
                     required
@@ -137,16 +142,16 @@ const Checkout = ({ totalCost }) => {
 
                 <div>
                   <label
-                    htmlFor="your_email"
+                    htmlFor="email"
                     className="mb-2 block text-sm font-medium text-gray-800 dark:text-white"
                   >
                     Your email*
                   </label>
                   <input
                     type="email"
-                    id="your_email"
-                    name="your_email"
-                    value={data.your_email}
+                    id="email"
+                    name="email"
+                    value={data.email}
                     onChange={handleChange}
                     placeholder="name@flowbite.com"
                     required
