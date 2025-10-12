@@ -11,13 +11,14 @@ const Checkout = ({ totalCost }) => {
     email: "",
     phone: "",
     city: "Yeka",
-    company_name: "",
-    vat_number: "",
-    voucher: "",
+    address_line: "",
+    region: "",
     payment_method: "chapa",
     total:totalCost.total,
     cart:cart
   });
+
+ 
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -27,7 +28,7 @@ const Checkout = ({ totalCost }) => {
     const { name, value } = e.target;
     setData(name, value);
 
-    console.log(data);
+
 
     post(route('checkout.store'), {
       onSuccess: (page) => {
@@ -200,36 +201,36 @@ const Checkout = ({ totalCost }) => {
 
                 <div>
                   <label
-                    htmlFor="company_name"
+                    htmlFor="region"
                     className="mb-2 block text-sm font-medium text-gray-800 dark:text-white"
                   >
-                    Company name
+                    Region
                   </label>
                   <input
                     type="text"
-                    id="company_name"
-                    name="company_name"
-                    value={data.company_name}
+                    id="region"
+                    name="region"
+                    value={data.region}
                     onChange={handleChange}
-                    placeholder="Flowbite LLC"
+                    placeholder="hawassa"
                     className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-800 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-primary-500 dark:focus:ring-primary-500"
                   />
                 </div>
 
                 <div>
                   <label
-                    htmlFor="vat_number"
+                    htmlFor="address_line"
                     className="mb-2 block text-sm font-medium text-gray-800 dark:text-white"
                   >
-                    VAT number
+                   Address
                   </label>
                   <input
                     type="text"
-                    id="vat_number"
-                    name="vat_number"
-                    value={data.vat_number}
+                    id="address_line"
+                    name="address_line"
+                    value={data.address_line}
                     onChange={handleChange}
-                    placeholder="DE42313253"
+                    placeholder="yeka kotebe"
                     className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-800 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-primary-500 dark:focus:ring-primary-500"
                   />
                 </div>

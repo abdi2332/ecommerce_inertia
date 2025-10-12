@@ -8,15 +8,19 @@ use Inertia\Inertia;
 use App\Models\Address;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Services\CartService;
 use Illuminate\Support\Facades\DB;
-
+use App\Models\Cart;
+use App\Models\CartItem;
 
 class CheckoutController extends Controller
 {
     protected $checkoutService;
-    public function __construct(CheckoutService $checkoutService)
+    protected $cartService;
+    public function __construct(CheckoutService $checkoutService, CartService $cartService)
     {
         $this->checkoutService = $checkoutService;
+        $this->cartService = $cartService;
     }
 
     public function index()
@@ -30,21 +34,26 @@ class CheckoutController extends Controller
 
     public function store(Request $request)
     {
-            logger($request->all());
+
+        $cart=$this->cartService->getCartData($this->cartService->getCartIdentifier());
+        $totalCost = $this->checkoutService->calculateTotal();
+
+        logger($totalCost);
+     
    
         $validated = $request->validate([
             'full_name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
             'region' => 'required|string|max:255',
             'city' => 'required|string|max:255',
-            // 'address_line' => 'required|string|max:255',
+            'address_line' => 'required|string|max:255',
             'is_default' => 'boolean',
             'payment_method' => 'required|in:chapa,telebirr,cod',
-            // 'cart' => 'required|array|min:1',
-            // 'cart.*.product_id' => 'required|integer|exists:products,id',
-            // 'cart.*.quantity' => 'required|integer|min:1',
-            // 'cart.*.price' => 'required|numeric|min:0',
+            'total'=>'required|numeric|min:0',
         ]);
+
+       logger('Validated Data: ' . json_encode($validated));
+
 
       
 
@@ -53,9 +62,8 @@ class CheckoutController extends Controller
         DB::beginTransaction();
 
         try {
-            // 1️⃣ Create or reuse address
+            
             $address = Address::create([
-                'user_id' => auth()->id()?:null,
                 'full_name' => $validated['full_name'],
                 'phone' => $validated['phone'],
                 'region' => $validated['region'],
@@ -64,43 +72,41 @@ class CheckoutController extends Controller
                 'is_default' => $validated['is_default'] ?? false,
             ]);
 
-            // 2️⃣ Calculate order totals
-            $subtotal = collect($validated['cart'])->sum(fn($item) => $item['price'] * $item['quantity']);
-            $discount = 0; // You can plug in your discount logic here
-            $tax = 0;
-            $shipping_fee = 0;
-            $payment_fee = 0;
-            $total = $subtotal - $discount + $tax + $shipping_fee + $payment_fee;
+        
 
-            // 3️⃣ Create order
+         
             $order = Order::create([
                 'user_id' => auth()->id(),
                 'status' => 'pending',
                 'payment_method' => $validated['payment_method'],
                 'payment_status' => 'unpaid',
-                'subtotal' => $subtotal,
-                'discount' => $discount,
-                'tax' => $tax,
-                'shipping_fee' => $shipping_fee,
-                'payment_fee' => $payment_fee,
-                'total' => $total,
+                'subtotal' => $totalCost['subtotal'],
+                'discount' => $totalCost['discount'],
+                'tax' => $totalCost['tax'],
+                'shipping_fee' => $totalCost['shipping_fee'],
+                'payment_fee' => $totalCost['payment_fee'],
+                'total' => $totalCost['total'],
                 'shipping_address_id' => $address->id,
             ]);
 
-            // 4️⃣ Create order items
-            foreach ($validated['cart'] as $item) {
+           
+            foreach ($cart as $item) {
                 OrderItem::create([
                     'order_id' => $order->id,
-                    'product_id' => $item['product_id'],
-                    'quantity' => $item['quantity'],
+                    'product_id' => $item['id'],
+                    'quantity' => $item['qty'],
                     'price' => $item['price'],
-                    'subtotal' => $item['price'] * $item['quantity'],
+                    'subtotal' => $item['subtotal'],
                 ]);
             }
 
             DB::commit();
 
-            // 5️⃣ Success response for Inertia
+             if (in_array($validated['payment_method'], ['chapa', 'telebirr'])) {
+            return redirect()->route('checkout.payment', $order->id);
+        }
+
+          
             return redirect()->route('order.success')->with('success', 'Order placed successfully!');
         } catch (\Throwable $e) {
             DB::rollBack();
@@ -110,12 +116,12 @@ class CheckoutController extends Controller
         }
     }
 
-    public function success()
-    {
-        return Inertia::render('OrderSuccess', [
-            'message' => session('success') ?? 'Your order has been placed successfully!',
-        ]);
-    }
+    // public function success()
+    // {
+    //     return Inertia::render('OrderSuccess', [
+    //         'message' => session('success') ?? 'Your order has been placed successfully!',
+    //     ]);
+    // }
      
     
 }
