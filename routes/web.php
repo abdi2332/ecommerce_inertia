@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\PaymentController;
+use Illuminate\Support\Facades\Redis;
 
 Route::get('/', [ProductController::class, 'index'])->name('welcome');
 
@@ -38,9 +40,12 @@ Route::get('/test-search', function(Request $request) {
 
     Route::get('/products/{product}', [ProductController::class, 'detail'])->name('products.show');
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
+    Route::post('/chekout/store', [CheckoutController::class, 'store'])->name('checkout.store');
+
+    Route::get('/checkout/payment/{order}', [PaymentController::class, 'paymentPage'])->name('checkout.payment');
 
 
-    use Illuminate\Support\Facades\Redis;
+
 
 Route::get('/redis-test', function () {
     Redis::set('test', 'ok');
