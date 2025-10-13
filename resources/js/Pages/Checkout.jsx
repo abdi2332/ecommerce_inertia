@@ -14,8 +14,6 @@ const Checkout = ({ totalCost }) => {
     address_line: "",
     region: "",
     payment_method: "chapa",
-    total:totalCost.total,
-    cart:cart
   });
 
  
@@ -30,13 +28,13 @@ const Checkout = ({ totalCost }) => {
 
 
 
-    post(route('checkout.store'), {
-      onSuccess: (page) => {
+    // post(route('checkout.store'), {
+    //   onSuccess: (page) => {
 
-        // Inertia.visit(route('order.success')); 
+    //     // Inertia.visit(route('order.success')); 
   
-      },
-    });
+    //   },
+    // });
 
   };
 
