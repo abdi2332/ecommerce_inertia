@@ -15,16 +15,18 @@ class CartItemUpdated implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public  $sessionId;
+    public  $identifier;
     public  $productId;
 
     public $quantity;
+    public bool $isAuthenticated;
 
-    public function __construct($sessionId, $productId, $quantity)
+    public function __construct($identifier, $productId, $quantity, $isAuthenticated = false)
     {
-        $this->sessionId = $sessionId;
+        $this->identifier = $identifier;
         $this->productId = $productId;
         $this->quantity = $quantity;
+        $this->isAuthenticated = $isAuthenticated;
     }
 
 
@@ -37,9 +39,13 @@ class CartItemUpdated implements ShouldBroadcastNow
     
      public function broadcastOn(): array
      {
-         return [
-             new Channel("cart.{$this->sessionId}"), // Changed to public Channel
-         ];
+         if ($this->isAuthenticated) {
+             // Secure private channel for logged-in user
+             return [new PrivateChannel("cart.{$this->identifier}")];
+         }
+ 
+         // Public for guest carts
+         return [new Channel("cart.{$this->identifier}")];
      }
 
     

@@ -19,13 +19,17 @@ class CartItemRemoved implements ShouldBroadcastNow
      * Create a new event instance.
      */
 
-     public $sessionId;
+     public $identifier;
 
      public $productId;
-    public function __construct($sessionId, $productId)
+
+        public bool $isAuthenticated;
+
+    public function __construct($identifier, $productId, $isAuthenticated = false)
     {
         $this->productId = $productId;
-        $this->sessionId = $sessionId;
+        $this->identifier = $identifier;
+        $this->isAuthenticated = $isAuthenticated;
     }
 
     /**
@@ -35,9 +39,13 @@ class CartItemRemoved implements ShouldBroadcastNow
      */
     public function broadcastOn(): array
     {
-        return [
-            new Channel("cart.{$this->sessionId}"), // Changed to public Channel
-        ];
+        if ($this->isAuthenticated) {
+            // Secure private channel for logged-in user
+            return [new PrivateChannel("cart.{$this->identifier}")];
+        }
+
+        // Public for guest carts
+        return [new Channel("cart.{$this->identifier}")];
     }
 
     public function broadcastWith(){

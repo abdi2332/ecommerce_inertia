@@ -7,52 +7,24 @@ use App\Models\Product;
 use Inertia\Inertia;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Redis;
+use App\Services\CartService;
 
 class ProductController extends Controller
 {
 
 
-    protected function getCartIdentifier()
+    public function index(CartService $cartService)
     {
-        $user = auth()->check() ? auth()->id() : session()->getId();
+        $identifier = $cartService->getCartIdentifier();
+        $cartData = $cartService->getCartData($identifier);
 
-        return "cart:{$user}";
-    }
-
-    protected function getCartData($identifier)
-    {
-        $cart = Redis::hgetall($identifier);
-
-        if (empty($cart)) {
-            return [];
-        }
-
-        $products = Product::whereIn('id', array_keys($cart))->get();
-
-        return $products->map(function ($product) use ($cart) {
-            $qty = (int) $cart[$product->id];
-            return [
-                'id' => $product->id,
-                'name' => $product->name,
-                'price' => $product->price,
-                'qty' => $qty,
-                'subtotal' => $product->price * $qty,
-            ];
-        });
-    }
-
-    public function index()
-    {
-        $identifier = $this->getCartIdentifier();
-        $cartData = $this->getCartData($identifier);
-
-        $sessionId = session()->getId();
+        $identifier = auth()->check() ? auth()->id() : session()->getId();
         
         $products = Product::with('category', 'images')->get();
 
         return Inertia::render('Welcome', [
             'cartItem' => $cartData,
-            'sessionId' => $sessionId,
+            'sessionId' => $identifier,
             'laravelVersion' => Application::VERSION,
             'phpVersion' => PHP_VERSION,
             'auth' => [
