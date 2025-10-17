@@ -13,18 +13,10 @@ class ProductController extends Controller
 {
 
 
-    public function index(CartService $cartService)
+    public function index()
     {
-        $identifier = $cartService->getCartIdentifier();
-        $cartData = $cartService->getCartData($identifier);
-
-        $identifier = auth()->check() ? auth()->id() : session()->getId();
-        
-        $products = Product::with('category', 'images')->get();
-
+      
         return Inertia::render('Welcome', [
-            'cartItem' => $cartData,
-            'sessionId' => $identifier,
             'laravelVersion' => Application::VERSION,
             'phpVersion' => PHP_VERSION,
             'auth' => [
