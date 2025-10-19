@@ -18,13 +18,13 @@ createInertiaApp({
     setup({ el, App, props }) {
         const root = createRoot(el);
 
-        console.log('Inertia props:', props.initialPage.props.cart); // 
+        console.log('Inertia props:', props); // 
 
         root.render(
      <StockProvider>
         <CartProvider
           initialCart={props.initialPage.props.cart}        // from Laravel Inertia::share
-          sessionId={props.initialPage.props.sessionId}     // from Laravel session
+          identifier={props.initialPage.props.identifier}     // from Laravel session
         >
           <App {...props} />
         </CartProvider>

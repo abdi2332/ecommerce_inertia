@@ -4,16 +4,18 @@ import echo from '../../echo'
 
 const CartContext = createContext()
 
-export function CartProvider({ children, initialCart, sessionId }) {
+export function CartProvider({ children, initialCart, identifier }) {
+
+  // console.log(initialCart)
   const [cart, setCart] = useState(initialCart || []);
 
 	 useEffect(() => {
-    if (!sessionId) return;
+    if (!identifier) return;
 
-    console.log('Listening to public channel:', `cart.${sessionId}`);
+    console.log('Listening to public channel:', `cart.${identifier}`);
     
     // Use public channel() instead of private()
-    const channel = echo.channel(`cart.${sessionId}`);
+    const channel = echo.channel(`cart.${identifier}`);
     
     channel.listen('.CartUpdated', (event) => {
       
@@ -39,15 +41,18 @@ export function CartProvider({ children, initialCart, sessionId }) {
 
  
     setCart(prev => prev.filter(item => item.id !== event.product_id));
-})
+}).listen('.CartSynced', (e) => {
+        console.log('Full cart synced:', e.cart);
+      
+    });
 
 
 
     return () => {
       channel.stopListening('.CartUpdated');
-      echo.leave(`cart.${sessionId}`);
+      echo.leave(`cart.${identifier}`);
     };
-  }, [sessionId]);
+  }, [identifier]);
 
   return (
 	<CartContext.Provider value={{ cart, setCart }}>
