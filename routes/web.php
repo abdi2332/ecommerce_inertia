@@ -45,21 +45,6 @@ Route::post('/chekout/store', [CheckoutController::class, 'store'])->name('check
 
 Route::get('/checkout/payment/{order}', [PaymentController::class, 'paymentPage'])->name('checkout.payment');
 
-// routes/web.php
-Route::post('/cart/frontend-ready', function (Request $request, CartService $cartService) {
-    $user = $request->user();
-    if (!$user)
-        abort(401); // stop if not authenticated
-
-    $fullCart = $cartService->getCartData("cart:{$user->id}");
-
-    broadcast(new \App\Events\CartSynced($user->id, $fullCart->toArray(), true));
-
-    // no return at all
-})->middleware('auth');
-
-
-
 
 
 Route::get('/redis-test', function () {

@@ -10,7 +10,6 @@ export function CartProvider({ children, initialCart, identifier,user }) {
 
   const [cart, setCart] = useState(initialCart || []);
 
-
 	 useEffect(() => {
     if (!identifier) return;
 
