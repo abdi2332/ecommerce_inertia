@@ -40,7 +40,7 @@ Route::post('/item/remove', [CartController::class, 'removeItem']); //
 // Route::post('/cart/clear', [CartController::class, 'clear']);
 
 Route::get('/products/{product}', [ProductController::class, 'detail'])->name('products.show');
-Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
+Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout')->middleware('auth');
 Route::post('/chekout/store', [CheckoutController::class, 'store'])->name('checkout.store');
 
 Route::get('/checkout/payment/{order}', [PaymentController::class, 'paymentPage'])->name('checkout.payment');
