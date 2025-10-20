@@ -11,6 +11,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\Redis;
+use App\Services\CartService;
 
 Route::get('/', [ProductController::class, 'index'])->name('welcome');
 
@@ -25,24 +26,38 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::get('/test-search', function(Request $request) {
+Route::get('/test-search', function (Request $request) {
     $query = $request->input('q', ''); // default to empty string
     $results = Product::search($query)->get();
     return response()->json($results);
 });
 
-    Route::get('/cart', [CartController::class, 'index']);
-    Route::post('/cart/add', [CartController::class, 'add']);
-    Route::post('/item/add', [CartController::class, 'updateItem']); // 
-    Route::post('/item/remove', [CartController::class, 'removeItem']); //
-    // Route::post('/cart/remove', [CartController::class, 'remove']);
-    // Route::post('/cart/clear', [CartController::class, 'clear']);
+Route::get('/cart', [CartController::class, 'index']);
+Route::post('/cart/add', [CartController::class, 'add']);
+Route::post('/item/add', [CartController::class, 'updateItem']); // 
+Route::post('/item/remove', [CartController::class, 'removeItem']); //
+// Route::post('/cart/remove', [CartController::class, 'remove']);
+// Route::post('/cart/clear', [CartController::class, 'clear']);
 
-    Route::get('/products/{product}', [ProductController::class, 'detail'])->name('products.show');
-    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
-    Route::post('/chekout/store', [CheckoutController::class, 'store'])->name('checkout.store');
+Route::get('/products/{product}', [ProductController::class, 'detail'])->name('products.show');
+Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
+Route::post('/chekout/store', [CheckoutController::class, 'store'])->name('checkout.store');
 
-    Route::get('/checkout/payment/{order}', [PaymentController::class, 'paymentPage'])->name('checkout.payment');
+Route::get('/checkout/payment/{order}', [PaymentController::class, 'paymentPage'])->name('checkout.payment');
+
+// routes/web.php
+Route::post('/cart/frontend-ready', function (Request $request, CartService $cartService) {
+    $user = $request->user();
+    if (!$user)
+        abort(401); // stop if not authenticated
+
+    $fullCart = $cartService->getCartData("cart:{$user->id}");
+
+    broadcast(new \App\Events\CartSynced($user->id, $fullCart->toArray(), true));
+
+    // no return at all
+})->middleware('auth');
+
 
 
 
@@ -53,4 +68,4 @@ Route::get('/redis-test', function () {
 });
 
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

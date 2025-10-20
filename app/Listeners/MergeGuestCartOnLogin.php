@@ -2,6 +2,7 @@
 
 namespace App\Listeners;
 
+use App\Events\TestSync;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Auth\Events\Login;
@@ -37,11 +38,9 @@ class MergeGuestCartOnLogin
         Redis::expire($userCartKey, 86400);
         Redis::del("cart:{$oldSessionId}");
 
-        $fullCart = $this->cartService->getCartData($userCartKey);
 
-        logger('Dispatching CartSynced event', [$fullCart]);
-
-
-        broadcast(new CartSynced($user->id, $fullCart->toArray(), true));
+        
+        
     }
+
 }

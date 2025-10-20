@@ -1,21 +1,26 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { usePage } from '@inertiajs/react'
 import echo from '../../echo'
+import { Inertia, } from '@inertiajs/inertia';
 
 const CartContext = createContext()
 
-export function CartProvider({ children, initialCart, identifier }) {
+export function CartProvider({ children, initialCart, identifier,user }) {
 
-  // console.log(initialCart)
+
   const [cart, setCart] = useState(initialCart || []);
+
 
 	 useEffect(() => {
     if (!identifier) return;
 
-    console.log('Listening to public channel:', `cart.${identifier}`);
+    console.log( `Listening to ${user?'private':'public'} channel: `, `cart.${identifier}`);
     
     // Use public channel() instead of private()
-    const channel = echo.channel(`cart.${identifier}`);
+    const channel = user
+      ? echo.private(`cart.${identifier}`)
+      : echo.channel(`cart.${identifier}`);
+
     
     channel.listen('.CartUpdated', (event) => {
       
@@ -42,8 +47,8 @@ export function CartProvider({ children, initialCart, identifier }) {
  
     setCart(prev => prev.filter(item => item.id !== event.product_id));
 }).listen('.CartSynced', (e) => {
-        console.log('Full cart synced:', e.cart);
-      
+        console.log('Full cart synced:', e.cart)
+      setCart(e.cart);
     });
 
 
@@ -52,7 +57,7 @@ export function CartProvider({ children, initialCart, identifier }) {
       channel.stopListening('.CartUpdated');
       echo.leave(`cart.${identifier}`);
     };
-  }, [identifier]);
+  }, [identifier,user]);
 
   return (
 	<CartContext.Provider value={{ cart, setCart }}>
