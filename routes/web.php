@@ -44,6 +44,10 @@ Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout')-
 Route::post('/chekout/store', [CheckoutController::class, 'store'])->name('checkout.store');
 
 Route::get('/checkout/payment/{order}', [PaymentController::class, 'paymentPage'])->name('checkout.payment');
+Route::post('/payment/chapa/{order}', [PaymentController::class, 'initializeChapaPayment'])->name('payment.chapa.initialize');
+Route::get('/payment/chapa/callback', [PaymentController::class, 'chapaCallback'])->name('payment.chapa.callback');
+Route::get('/payment/chapa/return', [PaymentController::class, 'chapaReturn'])->name('payment.chapa.return');
+Route::get('/order/success/{order}', [PaymentController::class, 'orderSuccess'])->name('order.success');
 
 
 

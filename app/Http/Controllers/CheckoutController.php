@@ -49,7 +49,6 @@ class CheckoutController extends Controller
             'address_line' => 'required|string|max:255',
             'is_default' => 'boolean',
             'payment_method' => 'required|in:chapa,telebirr,cod',
-            'total'=>'required|numeric|min:0',
         ]);
 
        logger('Validated Data: ' . json_encode($validated));
@@ -64,6 +63,7 @@ class CheckoutController extends Controller
         try {
             
             $address = Address::create([
+                'user_id' => auth()->id(),
                 'full_name' => $validated['full_name'],
                 'phone' => $validated['phone'],
                 'region' => $validated['region'],

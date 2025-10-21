@@ -1,8 +1,26 @@
 import React from 'react'
 import { Link } from '@inertiajs/react'
 import Footer from '@/Layouts/Footer'
+import { Inertia } from '@inertiajs/inertia'
+import axios from 'axios';
+
 
 const PaymentPage = ({order}) => {
+
+  const handlePay = async (e) => {
+    e.preventDefault();
+  
+    try {
+      const res = await axios.post(route('payment.chapa.initialize', { order: order.id }));
+      if (res.data.checkout_url) {
+        window.location.href = res.data.checkout_url; // full redirect
+      }
+    } catch (err) {
+      console.error('Payment init failed', err);
+    }
+  };
+  
+  
    
   return (
     <>
@@ -83,7 +101,7 @@ const PaymentPage = ({order}) => {
           <div className="gap-4 sm:flex sm:items-center">
             <button type="button" className="w-full rounded-lg  border border-gray-200 bg-white px-5  py-2.5 text-sm font-medium text-gray-800 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:outline-none focus:ring-4 focus:ring-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white dark:focus:ring-gray-700">Return to Shopping</button>
 
-            <button type="submit" className="mt-4 flex w-full items-center justify-center rounded-lg bg-primary-700  px-5 py-2.5 text-sm font-medium text-white hover:bg-primary-800 focus:outline-none focus:ring-4 focus:ring-primary-300  dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800 sm:mt-0">Pay</button>
+            <button className="mt-4 flex w-full items-center justify-center rounded-lg bg-primary-700  px-5 py-2.5 text-sm font-medium text-white hover:bg-primary-800 focus:outline-none focus:ring-4 focus:ring-primary-300  dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800 sm:mt-0" onClick={handlePay}>Pay</button>
           </div>
         </div>
       </div>

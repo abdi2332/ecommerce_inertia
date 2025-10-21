@@ -17,6 +17,7 @@ const Checkout = ({ totalCost }) => {
   });
 
  
+  console.log(data)
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -137,6 +138,7 @@ const Checkout = ({ totalCost }) => {
                     required
                     className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-800 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-primary-500 dark:focus:ring-primary-500"
                   />
+                   {errors.name && <div>{errors.name}</div>}
                 </div>
 
                 <div>
@@ -156,6 +158,7 @@ const Checkout = ({ totalCost }) => {
                     required
                     className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-800 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-primary-500 dark:focus:ring-primary-500"
                   />
+                   {errors.name && <div>{errors.name}</div>}
                 </div>
 
                 <div>
@@ -195,6 +198,7 @@ const Checkout = ({ totalCost }) => {
                     required
                     className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-800 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-primary-500 dark:focus:ring-primary-500"
                   />
+                   {errors.name && <div>{errors.name}</div>}
                 </div>
 
                 <div>
@@ -213,6 +217,7 @@ const Checkout = ({ totalCost }) => {
                     placeholder="hawassa"
                     className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-800 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-primary-500 dark:focus:ring-primary-500"
                   />
+                   {errors.name && <div>{errors.name}</div>}
                 </div>
 
                 <div>
@@ -231,6 +236,7 @@ const Checkout = ({ totalCost }) => {
                     placeholder="yeka kotebe"
                     className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-800 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-primary-500 dark:focus:ring-primary-500"
                   />
+                   {errors.name && <div>{errors.name}</div>}
                 </div>
               </div>
             </div>
@@ -253,6 +259,7 @@ const Checkout = ({ totalCost }) => {
                       onChange={handleChange}
                       className="h-4 w-4 text-primary-600 focus:ring-primary-600"
                     />
+                     {errors.name && <div>{errors.name}</div>}
                     <div className="ms-4 text-sm">
                       <span className="font-medium leading-none text-gray-800 dark:text-white">
                         Pay with Chapa
