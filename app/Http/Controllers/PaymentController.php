@@ -8,14 +8,18 @@ use App\Services\ChapaService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Log;
+use App\Services\CartService;
 
 class PaymentController extends Controller
 {
     protected $chapaService;
 
-    public function __construct(ChapaService $chapaService)
+    protected $cartService;
+
+    public function __construct(ChapaService $chapaService, CartService $cartService)
     {
         $this->chapaService = $chapaService;
+        $this->cartService = $cartService;
     }
 
     // Render payment page
@@ -40,7 +44,7 @@ class PaymentController extends Controller
                 'last_name' => $user->name,
                 'tx_ref' => $tx_ref,
                 'callback_url' => route('payment.chapa.callback'),
-                'return_url' => route('payment.chapa.return'),
+                'return_url' => route('payment.chapa.return', ['tx_ref' => $tx_ref]),
                 'customization' => [
                     'title' => 'Purchase',
                     'description' => 'Payment' . $order->id,
@@ -83,7 +87,7 @@ class PaymentController extends Controller
     public function chapaCallback(Request $request)
     {
         Log::info('Chapa Callback Received:', $request->all());
-        $tx_ref = $request->input('tx_ref');
+        $tx_ref = $request->input('trx_ref');
 
         if (!$tx_ref) {
             Log::error('Chapa Callback: Missing transaction reference');
@@ -118,23 +122,28 @@ class PaymentController extends Controller
 
     // Return URL (user redirected after payment)
     public function chapaReturn(Request $request)
-    {
-        $tx_ref = $request->query('tx_ref');
+{
+    $tx_ref = $request->query('tx_ref');
 
-        $payment = Payment::where('reference', $tx_ref)->first();
+    Log::info('Chapa return called with:', ['tx_ref' => $tx_ref]);
 
-        if ($payment && $payment->status === 'success') {
-            return redirect()->route('order.success', $payment->order_id)
-                ->with('success', 'Payment completed successfully! Order #' . $payment->order_id);
-        }
+    $payment = Payment::where('reference', $tx_ref)->first();
 
-        return redirect()->route('orders.index')
-            ->with('error', 'Payment verification failed. Please contact support.');
+    if ($payment && $payment->status === 'success') {
+        return redirect()->route('order.success', $payment->order_id)
+            ->with('success', 'Payment completed successfully! Order #' . $payment->order_id);
     }
+
+    return redirect()->route('welcome')
+        ->with('error', 'Payment verification failed. Please contact support.');
+}
+
 
 
     public function orderSuccess(Order $order){
         $order->load('items.product.images', 'shippingAddress');
+
+        $this->cartService->clearCart(auth()->id());
 
         return Inertia::render('Confirmation', ['order' => $order]);
     }

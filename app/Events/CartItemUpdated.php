@@ -21,7 +21,7 @@ class CartItemUpdated implements ShouldBroadcastNow
     public $quantity;
     public bool $isAuthenticated;
 
-    public function __construct($identifier, $productId, $quantity, $isAuthenticated = false)
+    public function __construct($identifier, $productId, $quantity, $isAuthenticated)
     {
         $this->identifier = $identifier;
         $this->productId = $productId;

@@ -17,7 +17,7 @@ public function addItem($identifier, $productId, $quantity = 1)
         Redis::expire("cart:{$identifier}", 86400); // 24h expiration
 
         broadcast(new CartItemAdded($identifier, $productId, $newQty, $this->getProductData($productId), $this->isAuthenticated()));
-        broadcast(new \App\Events\CartSynced(1, ['item'=>1], true));
+        // broadcast(new \App\Events\CartSynced(1, ['item'=>1], true));
 
         // this is the broadcast for stock update on checkout because we want to update stock only when user checkout because user can add to cart but not buy
         // $identifier = session()->getId(); // get current session ID
@@ -49,7 +49,7 @@ public function addItem($identifier, $productId, $quantity = 1)
             $newQty = 0;
         }
     
-    broadcast(new CartItemUpdated( $identifier, $productId, $newQty));
+    broadcast(new CartItemUpdated( $identifier, $productId, $newQty,$this->isAuthenticated()));
 
         return $newQty;
     }
@@ -75,6 +75,23 @@ public function addItem($identifier, $productId, $quantity = 1)
     
 
     }
+
+    public function clearCart($identifier = null)
+{
+    // Determine cart identifier: either provided or current user/session
+    $identifier = $identifier ?? $this->getCartIdentifier();
+
+    // Remove all items from Redis
+    Redis::del($identifier);
+
+    logger('Cart cleared: ' . $identifier);
+
+    // Broadcast cart cleared event if needed (frontend can react)
+    // broadcast(new CartItemRemoved($identifier, null, $this->isAuthenticated()));
+
+    logger("Cart cleared for identifier: {$identifier}");
+}
+
 
     public function getCartIdentifier()
     {

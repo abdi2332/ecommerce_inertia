@@ -40,10 +40,10 @@ Route::post('/item/remove', [CartController::class, 'removeItem']); //
 // Route::post('/cart/clear', [CartController::class, 'clear']);
 
 Route::get('/products/{product}', [ProductController::class, 'detail'])->name('products.show');
-Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout')->middleware('auth');
+Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
 Route::post('/chekout/store', [CheckoutController::class, 'store'])->name('checkout.store');
 
-Route::get('/checkout/payment/{order}', [PaymentController::class, 'paymentPage'])->name('checkout.payment');
+Route::get('/checkout/payment/{order}', [PaymentController::class, 'paymentPage'])->name('checkout.payment')->middleware('auth');
 Route::post('/payment/chapa/{order}', [PaymentController::class, 'initializeChapaPayment'])->name('payment.chapa.initialize');
 Route::get('/payment/chapa/callback', [PaymentController::class, 'chapaCallback'])->name('payment.chapa.callback');
 Route::get('/payment/chapa/return', [PaymentController::class, 'chapaReturn'])->name('payment.chapa.return');

@@ -34,6 +34,7 @@ class MergeGuestCartOnLogin
         foreach ($guestCart as $productId => $qty) {
             Redis::hincrby($userCartKey, $productId, $qty);
         }
+        logger('Merging guest cart into user cart for user ID: ' . $user->id);
 
         Redis::expire($userCartKey, 86400);
         Redis::del("cart:{$oldSessionId}");
