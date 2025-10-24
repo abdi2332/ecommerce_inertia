@@ -189,7 +189,7 @@ export default function Welcome({ auth, cartItem, sessionId}) {
   <div className="mx-auto max-w-screen-xl px-4 2xl:px-0">
   
     <div className="mx-auto max-w-7xl px-4 py-6  ">
-      <div className="flex gap-6">
+      <div className="lg:flex gap-6 ">
         {/* Sidebar Filter */}
 
         <SidebarFilter/>

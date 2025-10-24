@@ -34,5 +34,9 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+    'chapa' => [
+    'secret_key' => env('CHAPA_SECRET_KEY'),
+    'public_key' => env('CHAPA_PUBLIC_KEY'),
+],
 
 ];

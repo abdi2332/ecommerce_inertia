@@ -9,15 +9,18 @@ use App\Events\CartItemRemoved;
 
 class CartService
 {
-public function addItem($sessionId, $productId, $quantity = 1)
-    {
-        $newQty = Redis::hincrby("cart:{$sessionId}", $productId, $quantity);
-        Redis::expire("cart:{$sessionId}", 86400); // 24h expiration
 
-        broadcast(new CartItemAdded($sessionId, $productId, $newQty, $this->getProductData($productId)));
+
+public function addItem($identifier, $productId, $quantity = 1)
+    {
+        $newQty = Redis::hincrby("cart:{$identifier}", $productId, $quantity);
+        Redis::expire("cart:{$identifier}", 86400); // 24h expiration
+
+        broadcast(new CartItemAdded($identifier, $productId, $newQty, $this->getProductData($productId), $this->isAuthenticated()));
+        // broadcast(new \App\Events\CartSynced(1, ['item'=>1], true));
 
         // this is the broadcast for stock update on checkout because we want to update stock only when user checkout because user can add to cart but not buy
-        // $sessionId = session()->getId(); // get current session ID
+        // $identifier = session()->getId(); // get current session ID
 
         // $oldStock = Product::where('id', $productId)->value('stock');
 
@@ -33,26 +36,28 @@ public function addItem($sessionId, $productId, $quantity = 1)
         return $newQty;
     }
 
-    public function updateQuantity($sessionId, $productId, $quantity)
+    public function updateQuantity($identifier, $productId, $quantity)
     {
-        $newQty = Redis::hincrby("cart:{$sessionId}", $productId, $quantity);
+        $newQty = Redis::hincrby("cart:{$identifier}", $productId, $quantity);
 
         if ($newQty <= 0) {
-            Redis::hdel("cart:{$sessionId}", $productId);
+            Redis::hdel("cart:{$identifier}", $productId);
 
-            broadcast(new CartItemRemoved($sessionId, $productId));
+            broadcast(new CartItemRemoved($identifier, $productId, $this->isAuthenticated()));
+            // simple payload
+
             $newQty = 0;
         }
     
-    broadcast(new CartItemUpdated( $sessionId, $productId, $newQty));
+    broadcast(new CartItemUpdated( $identifier, $productId, $newQty,$this->isAuthenticated()));
 
         return $newQty;
     }
 
-    public function removeItem($sessionId, $productId){
-        Redis::hdel("cart:{$sessionId}", $productId);
+    public function removeItem($identifier, $productId){
+        Redis::hdel("cart:{$identifier}", $productId);
 
-        broadcast( new CartItemRemoved( $sessionId, $productId));
+        broadcast( new CartItemRemoved( $identifier, $productId,$this->isAuthenticated()));
     }
 
     public function getProductData($productId)
@@ -71,11 +76,37 @@ public function addItem($sessionId, $productId, $quantity = 1)
 
     }
 
+    public function clearCart($identifier = null)
+    {
+        // Determine cart identifier: either provided or current user/session
+        $identifier = $identifier ?? $this->getCartIdentifier();
+    
+        // Remove all items from Redis
+        Redis::del($identifier);
+    
+        // Check if it’s really gone
+        $cart = Redis::get($identifier);
+    
+        logger('Cart cleared: ' . $identifier);
+        logger('Cart contents after clear: ' . ($cart ?? 'EMPTY'));
+    
+        // Optional: broadcast cart-cleared event if frontend listens
+        // broadcast(new CartItemRemoved($identifier, null, $this->isAuthenticated()));
+    
+        logger("Cart cleared for identifier: {$identifier}");
+    }
+    
+
+
     public function getCartIdentifier()
     {
         $user = auth()->check() ? auth()->id() : session()->getId();
 
         return "cart:{$user}";
+    }
+
+    protected function isAuthenticated():bool {
+        return auth()->check();
     }
 
     public function getCartData($identifier)

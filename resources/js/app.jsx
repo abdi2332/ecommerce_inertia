@@ -23,8 +23,9 @@ createInertiaApp({
         root.render(
      <StockProvider>
         <CartProvider
+          user={props.initialPage.props.auth.user} 
           initialCart={props.initialPage.props.cart}        // from Laravel Inertia::share
-          sessionId={props.initialPage.props.sessionId}     // from Laravel session
+          identifier={props.initialPage.props.identifier}     // from Laravel session
         >
           <App {...props} />
         </CartProvider>

@@ -2,68 +2,64 @@
 
 namespace App\Http\Controllers;
 
-use App\Events\CartUpdated;
+use App\Services\CartService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redis;
-use App\Models\Product;
 use Inertia\Inertia;
-use App\Services\CartService;
 
 class CartController extends Controller
 {
     protected $cartService;
+
     public function __construct(CartService $cartService)
     {
         $this->cartService = $cartService;
     }
 
-    public function add(Request $request)
-{
-    $sessionId = session()->getId();
-    $productId = $request->input('product_id');
-    $change = (int) $request->input('change', 1);
-
-    if (Redis::hexists('cart:' . $sessionId, $productId)) {
-        $this->cartService->updateQuantity($sessionId, $productId, $change);
-    } else {
-        $this->cartService->addItem($sessionId, $productId, $change);
+    protected function getIdentifier()
+    {
+        return auth()->check() ? auth()->id() : session()->getId();
     }
 
-    return Inertia::render('Welcome');
-}
+    public function add(Request $request)
+    {
+        $identifier = $this->getIdentifier();
+        $productId = $request->input('product_id');
+        $change = (int) $request->input('change', 1);
 
+        logger($request->all());
 
+        if (Redis::hexists('cart:' . $identifier, $productId)) {
+            logger('updating existing item in cart');
+            $this->cartService->updateQuantity($identifier, $productId, $change);
+        } else {
+            logger('adding new item to cart');
+            $this->cartService->addItem($identifier, $productId, $change);
+        }
+
+        return Inertia::render('Welcome');
+    }
 
     public function updateItem(Request $request)
     {
+        $identifier = $this->getIdentifier();
+        $productId = $request->input('product_id');
+        $change = (int) $request->input('change');
 
+        logger($request->all());
 
-   
-        $this->cartService->updateQuantity(
-            session()->getId(),
-            $productId = $request->input('product_id'),
-            $change = (int) $request->input('change'),
-        );
+        $this->cartService->updateQuantity($identifier, $productId, $change);
 
-        
         return Inertia::render('Welcome');
     }
 
+    public function removeItem(Request $request)
+    {
+        $identifier = $this->getIdentifier();
+        $productId = $request->input('product_id');
 
-    public function removeItem(Request $request){
+        $this->cartService->removeItem($identifier, $productId);
 
-        $this->cartService->removeItem(
-            session()->getId(),
-            $productId = $request->input('product_id'),
-        );
-
-        
         return Inertia::render('Welcome');
-
     }
-
-
-
-
-   
 }

@@ -6,8 +6,8 @@ use App\Models\Product;
 class CheckoutService {
 	public function calculateTotal( $shippingFee = 250, $paymentFee = 0, $promoCode = null)
 {
-	 $sessionId = session()->getId();
-    $cart = Redis::hgetall("cart:{$sessionId}");
+	 $identifier = auth()->check() ? auth()->id() : session()->getId();
+    $cart = Redis::hgetall("cart:{$identifier}");
     if (empty($cart)) {
         return [
             'subtotal' => 0,
