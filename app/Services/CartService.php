@@ -77,20 +77,25 @@ public function addItem($identifier, $productId, $quantity = 1)
     }
 
     public function clearCart($identifier = null)
-{
-    // Determine cart identifier: either provided or current user/session
-    $identifier = $identifier ?? $this->getCartIdentifier();
-
-    // Remove all items from Redis
-    Redis::del($identifier);
-
-    logger('Cart cleared: ' . $identifier);
-
-    // Broadcast cart cleared event if needed (frontend can react)
-    // broadcast(new CartItemRemoved($identifier, null, $this->isAuthenticated()));
-
-    logger("Cart cleared for identifier: {$identifier}");
-}
+    {
+        // Determine cart identifier: either provided or current user/session
+        $identifier = $identifier ?? $this->getCartIdentifier();
+    
+        // Remove all items from Redis
+        Redis::del($identifier);
+    
+        // Check if it’s really gone
+        $cart = Redis::get($identifier);
+    
+        logger('Cart cleared: ' . $identifier);
+        logger('Cart contents after clear: ' . ($cart ?? 'EMPTY'));
+    
+        // Optional: broadcast cart-cleared event if frontend listens
+        // broadcast(new CartItemRemoved($identifier, null, $this->isAuthenticated()));
+    
+        logger("Cart cleared for identifier: {$identifier}");
+    }
+    
 
 
     public function getCartIdentifier()

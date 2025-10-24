@@ -1,14 +1,17 @@
 import React, { useEffect } from 'react'
 import Footer from '@/Layouts/Footer'
 import { useCart } from './components/CartProvider'
+import { router } from '@inertiajs/react'
 
 const Confirmation = ({ order }) => {
-  const { setCart } = useCart()
+  const { cart, setCart } = useCart()
 
-  // Clear cart on page load
   useEffect(() => {
     setCart([])
+    localStorage.removeItem('cart')
   }, [])
+
+
 
   return (
     <>
@@ -50,7 +53,12 @@ const Confirmation = ({ order }) => {
               href="/"
               onClick={(e) => {
                 e.preventDefault()
-                window.location.href = '/'
+                // Clear frontend cart
+                setCart([])
+                localStorage.removeItem('cart')
+
+                // Redirect via Inertia to trigger fresh backend share data
+                router.visit('/', { replace: true })
               }}
               className="py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
             >

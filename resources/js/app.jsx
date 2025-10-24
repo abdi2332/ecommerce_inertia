@@ -18,7 +18,7 @@ createInertiaApp({
     setup({ el, App, props }) {
         const root = createRoot(el);
 
-        console.log('Inertia props:', props); // 
+        console.log('Inertia props:', props.initialPage.props.cart); // 
 
         root.render(
      <StockProvider>
