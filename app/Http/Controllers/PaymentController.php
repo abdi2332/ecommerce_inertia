@@ -8,12 +8,12 @@ use App\Services\ChapaService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use App\Services\CartService;
 
 class PaymentController extends Controller
 {
     protected $chapaService;
-
     protected $cartService;
 
     public function __construct(ChapaService $chapaService, CartService $cartService)
@@ -47,31 +47,39 @@ class PaymentController extends Controller
                 'return_url' => route('payment.chapa.return', ['tx_ref' => $tx_ref]),
                 'customization' => [
                     'title' => 'Purchase',
-                    'description' => 'Payment' . $order->id,
+                    'description' => 'Payment ' . $order->id,
                 ],
             ];
 
             $response = $this->chapaService->initializePayment($paymentData);
 
             if (isset($response['status']) && $response['status'] === 'success') {
-                // Store payment record
-                Payment::create([
-                    'order_id' => $order->id,
-                    'provider' => 'chapa',
-                    'reference' => $tx_ref,
-                    'amount' => $order->total,
-                    'status' => 'pending',
-                    'response' => json_encode($response),
-                ]);
+                // Wrap DB writes in transaction
+                DB::beginTransaction();
+                try {
+                    Payment::create([
+                        'order_id' => $order->id,
+                        'provider' => 'chapa',
+                        'reference' => $tx_ref,
+                        'amount' => $order->total,
+                        'status' => 'pending',
+                        'response' => json_encode($response),
+                    ]);
 
-                // Update order payment_status to processing
-                $order->update([
-                    'payment_status' => 'processing',
-                ]);
+                    $order->update([
+                        'payment_status' => 'processing',
+                    ]);
 
-                return response()->json([
-                    'checkout_url' => $response['data']['checkout_url']
-                ]);
+                    DB::commit();
+
+                    return response()->json([
+                        'checkout_url' => $response['data']['checkout_url']
+                    ]);
+                } catch (\Exception $e) {
+                    DB::rollBack();
+                    Log::error('DB Transaction Failed (Initialize Payment): ' . $e->getMessage());
+                    return response()->json(['error' => 'Failed to process payment.'], 500);
+                }
             }
 
             $errorMessage = $response['message'] ?? 'Failed to initialize payment';
@@ -94,56 +102,74 @@ class PaymentController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Missing reference'], 400);
         }
 
-        $verification = $this->chapaService->verifyPayment($tx_ref);
+        try {
+            $verification = $this->chapaService->verifyPayment($tx_ref);
 
-        if ($verification['status'] === 'success' && $verification['data']['status'] === 'success') {
-            $payment = Payment::where('reference', $tx_ref)->first();
+            if ($verification['status'] === 'success' && $verification['data']['status'] === 'success') {
+                DB::beginTransaction();
+                try {
+                    $payment = Payment::where('reference', $tx_ref)->first();
 
-            if ($payment && $payment->status !== 'success') {
-                // Update payment record
-                $payment->update([
-                    'status' => 'success',
-                    'response' => json_encode($verification['data']),
-                ]);
+                    if ($payment && $payment->status !== 'success') {
+                        $payment->update([
+                            'status' => 'success',
+                            'response' => json_encode($verification['data']),
+                        ]);
 
-                // Update the related order
-                $order = $payment->order;
-                $order->update([
-                    'payment_status' => 'paid',
-                    'status' => 'paid',
-                ]);
+                        $order = $payment->order;
+                        $order->update([
+                            'payment_status' => 'paid',
+                            'status' => 'paid',
+                        ]);
 
-                Log::info('Payment successful for order: ' . $order->id);
+                        Log::info('Payment successful for order: ' . $order->id);
+                    }
+
+                    DB::commit();
+                } catch (\Exception $e) {
+                    DB::rollBack();
+                    Log::error('DB Transaction Failed (Callback): ' . $e->getMessage());
+                }
             }
-        }
 
-        return response()->json(['status' => 'success']);
+            return response()->json(['status' => 'success']);
+        } catch (\Exception $e) {
+            Log::error('Chapa Callback Error: ' . $e->getMessage());
+            return response()->json(['status' => 'error', 'message' => 'Callback processing failed'], 500);
+        }
     }
 
     // Return URL (user redirected after payment)
     public function chapaReturn(Request $request)
-{
-    $tx_ref = $request->query('tx_ref');
+    {
+        $tx_ref = $request->query('tx_ref');
 
-    Log::info('Chapa return called with:', ['tx_ref' => $tx_ref]);
+        Log::info('Chapa return called with:', ['tx_ref' => $tx_ref]);
 
-    $payment = Payment::where('reference', $tx_ref)->first();
+        $payment = Payment::where('reference', $tx_ref)->first();
 
-    if ($payment && $payment->status === 'success') {
-        return redirect()->route('order.success', $payment->order_id)
-            ->with('success', 'Payment completed successfully! Order #' . $payment->order_id);
+        if ($payment && $payment->status === 'success') {
+            return redirect()->route('order.success', $payment->order_id)
+                ->with('success', 'Payment completed successfully! Order #' . $payment->order_id);
+        }
+
+        return redirect()->route('welcome')
+            ->with('error', 'Payment verification failed. Please contact support.');
     }
 
-    return redirect()->route('welcome')
-        ->with('error', 'Payment verification failed. Please contact support.');
-}
-
-
-
-    public function orderSuccess(Order $order){
+    // Order confirmation
+    public function orderSuccess(Order $order)
+    {
         $order->load('items.product.images', 'shippingAddress');
 
-        $this->cartService->clearCart(auth()->id());
+        try {
+            DB::beginTransaction();
+            $this->cartService->clearCart(auth()->id()); // clear cart
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Failed to clear cart after order: ' . $e->getMessage());
+        }
 
         return Inertia::render('Confirmation', ['order' => $order]);
     }
