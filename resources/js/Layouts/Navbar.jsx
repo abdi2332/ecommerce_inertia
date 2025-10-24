@@ -8,7 +8,7 @@ const Navbar = () => {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const {cart,user} = useCart();
+  const { cart, user } = useCart();
 
 
 
@@ -91,7 +91,7 @@ const Navbar = () => {
                 </svg>
               </button>
 
-              {isCartOpen && (
+              {isCartOpen && cart.length > 0 && (
                 <div className="absolute right-0 z-10 w-72 space-y-4 overflow-hidden rounded-lg bg-white p-4 antialiased shadow-lg dark:bg-gray-800">
                   {cart.map((item) => (
                     <div key={item.id} className="grid grid-cols-5 gap-2 items-center">
@@ -109,17 +109,15 @@ const Navbar = () => {
                         <button
                           type="button"
                           className="px-2 dark:bg-white py-1 text-sm font-bold border rounded hover:bg-gray-100 dark:hover:bg-gray-700"
-                          onClick={() => updateQty(item.id, -1)} // replace with decrease logic
+                          onClick={() => updateQty(item.id, -1)}
                         >
                           -
                         </button>
-                        <span className="text-sm font-normal text-gray-900 dark:text-white">
-                          {item.qty}
-                        </span>
+                        <span className="text-sm font-normal text-gray-900 dark:text-white">{item.qty}</span>
                         <button
                           type="button"
                           className="px-2 py-1 dark:bg-white text-sm font-bold border rounded hover:bg-gray-100 dark:hover:bg-gray-700"
-                          onClick={() => updateQty(item.id, +1)} // replace with increase logic
+                          onClick={() => updateQty(item.id, +1)}
                         >
                           +
                         </button>
@@ -140,19 +138,15 @@ const Navbar = () => {
                     </div>
                   ))}
 
-                  {/* <a
-                    href="#"
+                  <Link
+                    href="/checkout"
                     className="block w-full text-center rounded-lg bg-primary-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-primary-800 focus:outline-none focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
-                    role="button"
                   >
                     Proceed to Checkout
-                  </a> */}
-                     <Link href={`/checkout`} className="block w-full text-center rounded-lg bg-primary-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-primary-800 focus:outline-none focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
-                     >
-                             Proceed to Checkout
-                            </Link>
+                  </Link>
                 </div>
               )}
+
 
             </div>
 
@@ -178,7 +172,7 @@ const Navbar = () => {
                     <li><a href="#" className="inline-flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">My Account</a></li>
                     <li><a href="#" className="inline-flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">My Orders</a></li>
                     <li><a href="#" className="inline-flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">Favourites</a></li>
-     
+
                   </ul>
 
                   <div className="p-2 text-sm font-medium text-gray-900 dark:text-white">
