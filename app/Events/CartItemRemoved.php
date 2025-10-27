@@ -23,13 +23,16 @@ class CartItemRemoved implements ShouldBroadcastNow
 
      public $productId;
 
-        public bool $isAuthenticated;
+    public bool $isAuthenticated;
 
-    public function __construct($identifier, $productId, $isAuthenticated = false)
+    public $cartCount;
+
+    public function __construct($identifier, $productId, $isAuthenticated = false, $cartCount = null)
     {
         $this->productId = $productId;
         $this->identifier = $identifier;
         $this->isAuthenticated = $isAuthenticated;
+        $this->cartCount = $cartCount;
     }
 
     /**
@@ -50,7 +53,8 @@ class CartItemRemoved implements ShouldBroadcastNow
 
     public function broadcastWith(){
         return [
-            'product_id' => $this->productId
+            'product_id' => $this->productId,
+            'cart_count' => $this->cartCount,
         ];
     }
 

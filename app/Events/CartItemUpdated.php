@@ -21,12 +21,15 @@ class CartItemUpdated implements ShouldBroadcastNow
     public $quantity;
     public bool $isAuthenticated;
 
-    public function __construct($identifier, $productId, $quantity, $isAuthenticated)
+    public $cartCount;
+
+    public function __construct($identifier, $productId, $quantity, $isAuthenticated, $cartCount = null)
     {
         $this->identifier = $identifier;
         $this->productId = $productId;
         $this->quantity = $quantity;
         $this->isAuthenticated = $isAuthenticated;
+        $this->cartCount = $cartCount;
     }
 
 
@@ -55,7 +58,8 @@ class CartItemUpdated implements ShouldBroadcastNow
     
             return [
                 'product_id' => $this->productId,
-                'quantity' => $this->quantity
+                'quantity' => $this->quantity,
+                'cart_count' => $this->cartCount,
             ];
         }
 
