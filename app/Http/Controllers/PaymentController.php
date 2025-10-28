@@ -164,7 +164,7 @@ class PaymentController extends Controller
 
         try {
             DB::beginTransaction();
-            $this->cartService->clearCart(auth()->id()); // clear cart
+            $this->cartService->clearCart($this->cartService->getCartIdentifier());
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
