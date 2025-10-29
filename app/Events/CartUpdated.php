@@ -18,11 +18,14 @@ class CartUpdated implements ShouldBroadcastNow
 
     public bool $isAuthenticated;
 
-    public function __construct($identifier, $cart, $isAuthenticated = false)
+    public $cartCount;
+
+    public function __construct($identifier, $cart, $isAuthenticated = false, $cartCount = null)
     {
         $this->identifier = $identifier;
         $this->cart = $cart;
         $this->isAuthenticated = $isAuthenticated;
+        $this->cartCount = $cartCount;
     }
 
     public function broadcastOn(): array
@@ -34,6 +37,13 @@ class CartUpdated implements ShouldBroadcastNow
 
         
         return [new Channel("cart.{$this->identifier}")];
+    }
+
+    public function broadcastWith(){
+        return [
+            'cart' => $this->cart,
+            'cart_count' => $this->cartCount,
+        ];
     }
 
     public function broadcastAs(): string

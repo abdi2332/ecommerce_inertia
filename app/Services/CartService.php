@@ -16,7 +16,7 @@ public function addItem($identifier, $productId, $quantity = 1)
         $newQty = Redis::hincrby("cart:{$identifier}", $productId, $quantity);
         Redis::expire("cart:{$identifier}", 86400); // 24h expiration
 
-        broadcast(new CartItemAdded($identifier, $productId, $newQty, $this->getProductData($productId), $this->isAuthenticated()));
+        broadcast(new CartItemAdded($identifier, $productId, $newQty, $this->getProductData($productId), $this->isAuthenticated(), $this->getCartCount()));
         // broadcast(new \App\Events\CartSynced(1, ['item'=>1], true));
 
         // this is the broadcast for stock update on checkout because we want to update stock only when user checkout because user can add to cart but not buy
@@ -43,13 +43,13 @@ public function addItem($identifier, $productId, $quantity = 1)
         if ($newQty <= 0) {
             Redis::hdel("cart:{$identifier}", $productId);
 
-            broadcast(new CartItemRemoved($identifier, $productId, $this->isAuthenticated()));
+            broadcast(new CartItemRemoved($identifier, $productId, $this->isAuthenticated(), $this->getCartCount()));
             // simple payload
 
             $newQty = 0;
         }
     
-    broadcast(new CartItemUpdated( $identifier, $productId, $newQty,$this->isAuthenticated()));
+    broadcast(new CartItemUpdated( $identifier, $productId, $newQty,$this->isAuthenticated(), $this->getCartCount()));
 
         return $newQty;
     }
@@ -57,7 +57,7 @@ public function addItem($identifier, $productId, $quantity = 1)
     public function removeItem($identifier, $productId){
         Redis::hdel("cart:{$identifier}", $productId);
 
-        broadcast( new CartItemRemoved( $identifier, $productId,$this->isAuthenticated()));
+        broadcast( new CartItemRemoved( $identifier, $productId,$this->isAuthenticated(), $this->getCartCount()));
     }
 
     public function getProductData($productId)
@@ -129,6 +129,12 @@ public function addItem($identifier, $productId, $quantity = 1)
                 'subtotal' => $product->price * $qty,
             ];
         });
+    }
+
+    public function  getCartCount(){
+        $identifier = $this->getCartIdentifier();
+        $cart = Redis::hgetall($identifier);
+        return array_sum(array_map('intval', $cart));
     }
  
 }

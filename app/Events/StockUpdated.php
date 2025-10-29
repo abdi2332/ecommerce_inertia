@@ -18,13 +18,13 @@ class StockUpdated implements ShouldBroadcastNow
     /**
      * Create a new event instance.
      */
-    public $productId;
-    public $newStock;
-    public function __construct($newStock, $productId)
+
+    public $updates;
+    public function __construct($updates)
     
     {
-        $this->productId = $productId;
-        $this->newStock = $newStock;
+        $this->updates = $updates;
+       
     }
 
 
@@ -44,8 +44,7 @@ class StockUpdated implements ShouldBroadcastNow
 
     public function broadcastWith(){
         return [
-            'productId' => $this->productId,
-            'newstock' => $this->newStock
+            'updates' => $this->updates,
         ];
     }
     public function broadcastAs(): string
