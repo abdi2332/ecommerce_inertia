@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Events\StockUpdated;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Services\ChapaService;
@@ -124,30 +123,6 @@ class PaymentController extends Controller
                         ]);
 
                         Log::info('Payment successful for order: ' . $order->id);
-
-                        $updates = [];
-
-                        foreach ($order->items as $item) {
-                            $product = $item->product;
-                            if (!$product)
-                                continue;
-
-                            $oldStock = $product->stock;
-                            $newStock = max(0, $oldStock - $item->quantity);
-
-                            $product->update(['stock' => $newStock]);
-
-                            $updates[] = [
-                                'product_id' => $product->id,
-                                'old_stock' => $oldStock,
-                                'new_stock' => $newStock,
-                            ];
-                        }
-                        logger('Stock updates after payment for order ' . $order->id, $updates);
-
-                        if (!empty($updates)) {
-                            broadcast(new StockUpdated($updates));
-                        }
                     }
 
                     DB::commit();
@@ -195,19 +170,6 @@ class PaymentController extends Controller
             DB::rollBack();
             Log::error('Failed to clear cart after order: ' . $e->getMessage());
         }
-        // $identifier = session()->getId(); // get current session ID
-
-        // $oldStock = Product::where('id', $productId)->value('stock');
-
-        // if ($oldStock !== null) {
-        //     $newStock = max(0, $oldStock - $quantity); 
-        //     Product::where('id', $productId)->update(['stock' => $newStock]);
-
-        //     logger('Stock updated for product ' . $productId . ': ' . $oldStock . ' -> ' . $newStock);
-
-        //     broadcast(new StockUpdated($newStock, $productId));
-
-        // }
 
         return Inertia::render('Confirmation', ['order' => $order]);
     }
