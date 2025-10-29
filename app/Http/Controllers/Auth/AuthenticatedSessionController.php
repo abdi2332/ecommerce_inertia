@@ -48,7 +48,7 @@ class AuthenticatedSessionController extends Controller
         $userCart = $this->cartService->getCartData("cart:{$user->id}")->toArray();
 
         // Broadcast cart sync immediately after login
-        broadcast(new CartSynced($user->id, $userCart, true));
+        // broadcast(new CartSynced($user->id, $userCart, true));
 
         logger('User ' . $user->id . ' logged in and cart synced.');
 

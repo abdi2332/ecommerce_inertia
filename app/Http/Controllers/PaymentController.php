@@ -11,6 +11,7 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use App\Services\CartService;
+use Illuminate\Support\Facades\Redis;
 
 class PaymentController extends Controller
 {
@@ -125,29 +126,6 @@ class PaymentController extends Controller
 
                         Log::info('Payment successful for order: ' . $order->id);
 
-                        $updates = [];
-
-                        foreach ($order->items as $item) {
-                            $product = $item->product;
-                            if (!$product)
-                                continue;
-
-                            $oldStock = $product->stock;
-                            $newStock = max(0, $oldStock - $item->quantity);
-
-                            $product->update(['stock' => $newStock]);
-
-                            $updates[] = [
-                                'product_id' => $product->id,
-                                'old_stock' => $oldStock,
-                                'new_stock' => $newStock,
-                            ];
-                        }
-                        logger('Stock updates after payment for order ' . $order->id, $updates);
-
-                        if (!empty($updates)) {
-                            broadcast(new StockUpdated($updates));
-                        }
                     }
 
                     DB::commit();
@@ -184,31 +162,69 @@ class PaymentController extends Controller
 
     // Order confirmation
     public function orderSuccess(Order $order)
-    {
-        $order->load('items.product.images', 'shippingAddress');
+{
+    $order->load('items.product.images', 'shippingAddress');
 
-        try {
-            DB::beginTransaction();
-            $this->cartService->clearCart($this->cartService->getCartIdentifier());
-            DB::commit();
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Failed to clear cart after order: ' . $e->getMessage());
+    try {
+        DB::beginTransaction();
+
+        // Clear the user's cart
+        $this->cartService->clearCart($this->cartService->getCartIdentifier());
+
+        DB::commit();
+    } catch (\Exception $e) {
+        DB::rollBack();
+        Log::error('Failed to clear cart after order: ' . $e->getMessage());
+    }
+
+    $updates = [];
+
+    foreach ($order->items as $item) {
+        $product = $item->product;
+        if (!$product) {
+            continue;
         }
-        // $identifier = session()->getId(); // get current session ID
 
-        // $oldStock = Product::where('id', $productId)->value('stock');
+        $oldStock = $product->stock;
+        $newStock = max(0, $oldStock - $item->quantity);
 
-        // if ($oldStock !== null) {
-        //     $newStock = max(0, $oldStock - $quantity); 
-        //     Product::where('id', $productId)->update(['stock' => $newStock]);
+        $product->update(['stock' => $newStock]);
 
-        //     logger('Stock updated for product ' . $productId . ': ' . $oldStock . ' -> ' . $newStock);
+        $updates[] = [
+            'product_id' => $product->id,
+            'old_stock' => $oldStock,
+            'new_stock' => $newStock,
+        ];
+    }
 
-        //     broadcast(new StockUpdated($newStock, $productId));
-
-        // }
-
+    if (empty($updates)) {
+        Log::info("No stock updates for order {$order->id}");
+        Redis::del('pending_stock_updates');
         return Inertia::render('Confirmation', ['order' => $order]);
     }
+    
+    Log::info('Stock updates after payment for order ' . $order->id, $updates);
+
+    // Merge with existing pending updates in Redis
+    $pending = Redis::get('pending_stock_updates')
+        ? json_decode(Redis::get('pending_stock_updates'), true)
+        : [];
+
+    // Re-index by product_id to prevent duplicates
+    foreach ($updates as $update) {
+        $pending[$update['product_id']] = $update;
+    }
+
+    // Save merged updates back to Redis
+    if (!empty($pending)) {
+        Redis::set('pending_stock_updates', json_encode(array_values($pending)));
+    } else {
+        // If there are no updates, clear the key just in case
+        Redis::del('pending_stock_updates');
+    }
+
+    return Inertia::render('Confirmation', [
+        'order' => $order,
+    ]);
+}
 }
