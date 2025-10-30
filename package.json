@@ -28,6 +28,7 @@
     "dependencies": {
         "@babel/runtime": "^7.28.3",
         "@inertiajs/inertia": "^0.11.1",
+        "react-hot-toast": "^2.6.0",
         "react-instantsearch": "^7.16.2",
         "typesense-instantsearch-adapter": "^2.9.0"
     }

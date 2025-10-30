@@ -2,17 +2,30 @@ import React from 'react'
 import { Inertia, } from '@inertiajs/inertia';
 import { useStock } from './StockProvider';
 import { Link } from '@inertiajs/react';
+import { toast } from 'react-hot-toast';
+import { useCart } from './CartProvider';
+
+
 
 
 const ProductHit = ({ hit, }) => {
   const stock = useStock(hit.id, hit.stock);
+  const { cart } = useCart();
+  const inCartQty = cart.find(i => i.product_id === hit.id)?.quantity || 0;
+  const canAdd = stock > 0 && stock - inCartQty > 0;
+
+
 
   const updateQty = (productId, change) => {
 
     Inertia.post('/cart/add', { product_id: productId, change }, {
       preserveScroll: true, // keeps scroll position
-      onSuccess: () => { }, // Inertia will re-render page with updated props
+      onSuccess: () => {
+
+      }, // Inertia will re-render page with updated props
     });
+    toast.success('Added to cart');
+
   };
 
 
@@ -111,14 +124,34 @@ const ProductHit = ({ hit, }) => {
         <div className="mt-4 flex items-center justify-between gap-4">
           <p className="text-2xl font-extrabold leading-tight text-gray-900 dark:text-white">{hit.price}</p>
 
-          <button type="button" className={`inline-flex items-center rounded-lg px-5 py-2.5 text-sm font-medium text-white focus:outline-none focus:ring-4 
-          ${stock > 0 ? 'bg-primary-700 hover:bg-primary-800 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800': 'bg-gray-400 cursor-not-allowed opacity-70'}`}
-             onClick={stock > 0 ? () => updateQty(hit.id, 1) : null} disabled={stock <= 0}>
-            <svg className="-ms-2 me-2 h-5 w-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4h1.5L8 16m0 0h8m-8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm.75-3H7.5M11 7H6.312M17 4v6m-3-3h6" />
+          <button
+            type="button"
+            className={`inline-flex items-center rounded-lg px-5 py-2.5 text-sm font-medium text-white focus:outline-none focus:ring-4 ${canAdd
+                ? 'bg-primary-700 hover:bg-primary-800 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800'
+                : 'bg-gray-400 cursor-not-allowed opacity-70'}`}
+            onClick={canAdd ? () => updateQty(hit.id, 1) : null}
+            disabled={!canAdd}
+          >
+            <svg
+              className="-ms-2 me-2 h-5 w-5"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 4h1.5L8 16m0 0h8m-8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm.75-3H7.5M11 7H6.312M17 4v6m-3-3h6"
+              />
             </svg>
-            {stock > 0 ? 'Add to Cart' : 'Out of Stock'}
+            {canAdd ? 'Add to Cart' : 'Out of Stock'}
           </button>
+
         </div>
       </div>
     </div>
