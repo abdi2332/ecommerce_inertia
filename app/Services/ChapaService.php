@@ -9,7 +9,7 @@ class ChapaService
 
     public function __construct()
     {
-        $this->secret = env('CHAPA_SECRET');
+        $this->secret = env('CHAPA_SECRET_KEY');
     }
 
     public function initializePayment(array $payload): array

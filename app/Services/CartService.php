@@ -17,22 +17,7 @@ public function addItem($identifier, $productId, $quantity = 1)
         Redis::expire("cart:{$identifier}", 86400); // 24h expiration
 
         broadcast(new CartItemAdded($identifier, $productId, $newQty, $this->getProductData($productId), $this->isAuthenticated(), $this->getCartCount()));
-        // broadcast(new \App\Events\CartSynced(1, ['item'=>1], true));
 
-        // this is the broadcast for stock update on checkout because we want to update stock only when user checkout because user can add to cart but not buy
-        // $identifier = session()->getId(); // get current session ID
-
-        // $oldStock = Product::where('id', $productId)->value('stock');
-
-        // if ($oldStock !== null) {
-        //     $newStock = max(0, $oldStock - $quantity); 
-        //     Product::where('id', $productId)->update(['stock' => $newStock]);
-
-        //     logger('Stock updated for product ' . $productId . ': ' . $oldStock . ' -> ' . $newStock);
-
-        //     broadcast(new StockUpdated($newStock, $productId));
-
-        // }
         return $newQty;
     }
 

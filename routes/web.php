@@ -12,6 +12,7 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\Redis;
 use App\Services\CartService;
+use App\Events\StockUpdated;
 
 Route::get('/', [ProductController::class, 'index'])->name('welcome');
 
@@ -54,6 +55,27 @@ Route::get('/order/success/{order}', [PaymentController::class, 'orderSuccess'])
 Route::get('/redis-test', function () {
     Redis::set('test', 'ok');
     return Redis::get('test');
+});
+Route::get('/stock/pending', function () {
+    // Retrieve pending stock updates from Redis
+    $updates = Redis::get('pending_stock_updates');
+
+    if (!$updates) {
+        return response()->json([]);
+    }
+
+    // Decode JSON payload
+    $updates = json_decode($updates, true);
+
+    // Immediately broadcast them to the Stock channel
+    if (!empty($updates)) {
+        broadcast(new StockUpdated($updates));
+
+        // Clear Redis key to prevent rebroadcast
+        Redis::del('pending_stock_updates');
+    }
+
+    return response()->json($updates);
 });
 
 
