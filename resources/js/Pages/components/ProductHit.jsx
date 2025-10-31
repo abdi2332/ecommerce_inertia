@@ -2,8 +2,8 @@ import React from 'react'
 import { Inertia, } from '@inertiajs/inertia';
 import { useStock } from './StockProvider';
 import { Link } from '@inertiajs/react';
-import { toast } from 'react-hot-toast';
 import { useCart } from './CartProvider';
+import { toast } from 'react-toastify';
 
 
 

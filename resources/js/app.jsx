@@ -5,7 +5,7 @@ import { CartProvider } from './Pages/components/CartProvider';
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
-import toast, { Toaster } from 'react-hot-toast';
+import { ToastContainer, toast } from 'react-toastify';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -28,7 +28,7 @@ createInertiaApp({
           initialCart={props.initialPage.props.cart}        // from Laravel Inertia::share
           identifier={props.initialPage.props.identifier}     // from Laravel session
         >
-          <Toaster position="top-right" />
+          <ToastContainer position="top-right" autoClose={1000}/>
           <App {...props} />
         </CartProvider>
       </StockProvider>
