@@ -13,7 +13,7 @@ const Checkout = ({ totalCost }) => {
     city: "Yeka",
     address_line: "",
     region: "",
-    payment_method: "chapa",
+    payment_method: "",
   });
 
  
@@ -282,8 +282,8 @@ const Checkout = ({ totalCost }) => {
                     <input
                       type="radio"
                       name="payment_method"
-                      value="delivery"
-                      checked={data.payment_method === "delivery"}
+                      value="cod"
+                      checked={data.payment_method === "cod"}
                       onChange={handleChange}
                       className="h-4 w-4 text-primary-600 focus:ring-primary-600"
                     />

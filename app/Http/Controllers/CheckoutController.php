@@ -38,7 +38,8 @@ class CheckoutController extends Controller
         $cart=$this->cartService->getCartData($this->cartService->getCartIdentifier());
         $totalCost = $this->checkoutService->calculateTotal();
 
-        logger($totalCost);
+     
+        logger($request->all());
      
    
         $validated = $request->validate([
@@ -106,8 +107,9 @@ class CheckoutController extends Controller
             return redirect()->route('checkout.payment', $order->id);
         }
 
-          
-            return redirect()->route('order.success')->with('success', 'Order placed successfully!');
+        $this->cartService->clearCart($this->cartService->getCartIdentifier());
+        
+            return redirect()->route('order.success', $order->id)->with('success', 'Order placed successfully!');
         } catch (\Throwable $e) {
             DB::rollBack();
             report($e);

@@ -31,7 +31,7 @@ const Confirmation = ({ order }) => {
                     <div className="space-y-4 sm:space-y-2 rounded-lg border border-gray-100 bg-gray-50 p-6 dark:border-gray-700 dark:bg-gray-800 mb-6 md:mb-8">
                         {[
                             ["Date", order.created_at],
-                            ["Payment Method", "Chapa"],
+                            ["Payment Method", order.payment_method=="chapa"?"Chapa":"Cash on Delivery"],
                             ["Name", order.shipping_address.full_name],
                             [
                                 "Address",

@@ -28,7 +28,7 @@ createInertiaApp({
           initialCart={props.initialPage.props.cart}        // from Laravel Inertia::share
           identifier={props.initialPage.props.identifier}     // from Laravel session
         >
-          <ToastContainer position="top-right" autoClose={1000}/>
+          <ToastContainer position="top-right" autoClose={1500}/>
           <App {...props} />
         </CartProvider>
       </StockProvider>
