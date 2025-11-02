@@ -35,7 +35,7 @@ class ItemSeeder extends Seeder
      */
     public function run(): void
     {
-        $response = Http::get('https://dummyjson.com/products?limit=100');
+        $response = Http::get('https://dummyjson.com/products?limit=200');
         $products = $response->json()['products'];
 
         foreach ($products as $product) {
