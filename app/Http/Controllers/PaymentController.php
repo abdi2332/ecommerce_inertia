@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Events\StockUpdated;
+use App\Models\DeliveryStatusHistory;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Services\ChapaService;
@@ -122,6 +123,13 @@ class PaymentController extends Controller
                         $order->update([
                             'payment_status' => 'paid',
                             'status' => 'paid',
+                        ]);
+
+                        DeliveryStatusHistory::create([
+                            'order_id' => $order->id,
+                            'driver_id' => null,
+                            'status' => 'pending',
+                            'changed_at' => now(),
                         ]);
 
                         Log::info('Payment successful for order: ' . $order->id);

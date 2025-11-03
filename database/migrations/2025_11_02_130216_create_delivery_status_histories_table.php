@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('order_id')->constrained()->onDelete('cascade');
             $table->foreignId('driver_id')->nullable()->constrained()->nullOnDelete();
-            $table->enum('status', ['assigned', 'picked_up', 'on_the_way', 'delivered', 'failed']);
+            $table->enum('status', ['pending','assigned', 'picked_up', 'on_the_way', 'delivered', 'failed']);
             $table->timestamp('changed_at')->useCurrent();
             $table->timestamps();
         });

@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 const Confirmation = ({ order }) => {
     const { cart, setCart } = useCart();
 
-    toast.success("Order placed successfully!");
+    // toast.success("Order placed successfully!");
     useEffect(() => {
         setCart([]);
         localStorage.removeItem("cart");
@@ -15,7 +15,7 @@ const Confirmation = ({ order }) => {
 
     return (
         <>
-            <section className="bg-white py-8 antialiased dark:bg-gray-900 md:py-16">
+            <section className="bg-white py-8 antialiased dark:bg-gray-900 md:py-16 h-screen">
                 <div className="mx-auto max-w-2xl px-4 2xl:px-0">
                     <h2 className="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl mb-2">
                         Thanks for your order!
