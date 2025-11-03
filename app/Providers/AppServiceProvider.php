@@ -27,6 +27,7 @@ class AppServiceProvider extends ServiceProvider
         Inertia::share([
             'cart' => fn () => $cartService->getCartData($cartService->getCartIdentifier()),
             'identifier' => fn () => auth()->id()? auth()->id():  session()->getId(),
+            'csrfToken' => fn () => csrf_token(),
 
         ]);
         Vite::prefetch(concurrency: 3);

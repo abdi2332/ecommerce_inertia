@@ -13,6 +13,8 @@ use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\Redis;
 use App\Services\CartService;
 use App\Events\StockUpdated;
+use Illuminate\Support\Facades\Log;
+
 
 Route::get('/', [ProductController::class, 'index'])->name('welcome');
 
@@ -77,6 +79,15 @@ Route::get('/stock/pending', function () {
 
     return response()->json($updates);
 });
+
+
+
+Route::post('/api/save-fcm-token', function (Request $request) {
+    \Log::info('Save FCM route hit'); // <- simple test log
+    return response()->json(['status' => 'ok']);
+});
+
+
 
 
 require __DIR__ . '/auth.php';
