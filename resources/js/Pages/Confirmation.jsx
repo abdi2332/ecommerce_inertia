@@ -2,10 +2,12 @@ import React, { useEffect } from "react";
 import Footer from "@/Layouts/Footer";
 import { useCart } from "./components/CartProvider";
 import { router } from "@inertiajs/react";
+import { toast } from "react-toastify";
 
 const Confirmation = ({ order }) => {
     const { cart, setCart } = useCart();
 
+    toast.success("Order placed successfully!");
     useEffect(() => {
         setCart([]);
         localStorage.removeItem("cart");

@@ -21,7 +21,7 @@ export default function Login({ status, canResetPassword }) {
     };
 
     return (
-<>
+        <>
             <Head title="Log in" />
 
             {status && (
@@ -126,11 +126,26 @@ export default function Login({ status, canResetPassword }) {
                                         Sign up
                                     </Link>
                                 </p>
+                                {/* Google Login */}
+                                <div className="flex items-center justify-center mt-4">
+                                    <a
+                                        href='auth/google'
+                                        className="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600"
+                                    >
+                                        <img
+                                            src="https://www.svgrepo.com/show/355037/google.svg"
+                                            alt="Google logo"
+                                            className="w-5 h-5 mr-2"
+                                        />
+                                        Sign in with Google
+                                    </a>
+                                </div>
+
                             </form>
                         </div>
                     </div>
                 </div>
             </div>
-            </>
+        </>
     );
 }

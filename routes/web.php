@@ -13,6 +13,7 @@ use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\Redis;
 use App\Services\CartService;
 use App\Events\StockUpdated;
+use App\Http\Controllers\GoogleAuthController;
 
 Route::get('/', [ProductController::class, 'index'])->name('welcome');
 
@@ -77,6 +78,9 @@ Route::get('/stock/pending', function () {
 
     return response()->json($updates);
 });
+
+Route::get('auth/google', [GoogleAuthController::class, 'redirectToGoogle'])->name('auth.google');
+Route::get('auth/google/callback', [GoogleAuthController::class, 'handleGoogleCallback']);
 
 
 require __DIR__ . '/auth.php';
