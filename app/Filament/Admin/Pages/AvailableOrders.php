@@ -56,7 +56,7 @@ class AvailableOrders extends Page implements HasTable
                 ->color('success')
                 ->requiresConfirmation()
                 ->action(function (Order $record) {
-                    $driver = auth()->user(); // assuming driver is a user
+                    $driver = auth()->user()->driver;
 
                     DB::transaction(function () use ($record, $driver) {
                         // Assign order to driver

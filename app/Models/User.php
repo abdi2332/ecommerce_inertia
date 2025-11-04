@@ -66,4 +66,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(Cart::class);
     }
+
+    public function driver()
+    {
+        return $this->hasOne(Driver::class);
+    }
 }

@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('drivers', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade')->unique()->nullable();
             $table->string('phone')->nullable();
             $table->enum('status', ['available', 'busy', 'offline'])->default('available');
             $table->decimal('current_lat', 10, 7)->nullable();
