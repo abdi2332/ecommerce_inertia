@@ -46,7 +46,7 @@ const PaymentPage = ({order}) => {
 
             {order.items.map((item) => ( 
               <tr>
-                <td className="whitespace-nowrap py-4 md:w-[384px]">
+                <td key={item.id} className="whitespace-nowrap py-4 md:w-[384px]">
                   <div className="flex items-center gap-4">
                     <a href="#" className="flex items-center aspect-square w-10 h-10 shrink-0">
                       <img className="h-auto w-full max-h-full dark:hidden" src={item.product.images[0].image_path} alt=" image" />

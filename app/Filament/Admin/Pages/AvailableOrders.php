@@ -58,6 +58,8 @@ class AvailableOrders extends Page implements HasTable
                 ->action(function (Order $record) {
                     $driver = auth()->user()->driver;
 
+           
+
                     DB::transaction(function () use ($record, $driver) {
                         // Assign order to driver
                         $record->deliveryStatusHistories()->create([
@@ -67,7 +69,7 @@ class AvailableOrders extends Page implements HasTable
                         ]);
                     });
 
-                    session()->flash('success', 'Order assigned to you!');
+                    redirect()->away(route('order.track', ['order' => $record->id]));
                 }),
         ];
     }

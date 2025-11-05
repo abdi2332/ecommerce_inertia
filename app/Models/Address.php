@@ -14,6 +14,8 @@ class Address extends Model
         'city',
         'address_line',
         'is_default',
+        'lat',
+        'lng',
     ];
 
     public function user()

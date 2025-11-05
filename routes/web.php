@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Redis;
 use App\Services\CartService;
 use App\Events\StockUpdated;
 use App\Http\Controllers\GoogleAuthController;
+use App\Http\Controllers\OrderController;
 
 Route::get('/', [ProductController::class, 'index'])->name('welcome');
 
@@ -50,6 +51,7 @@ Route::post('/payment/chapa/{order}', [PaymentController::class, 'initializeChap
 Route::get('/payment/chapa/callback', [PaymentController::class, 'chapaCallback'])->name('payment.chapa.callback');
 Route::get('/payment/chapa/return', [PaymentController::class, 'chapaReturn'])->name('payment.chapa.return');
 Route::get('/order/success/{order}', [PaymentController::class, 'orderSuccess'])->name('order.success');
+Route::get('Trackorder/{order}', [OrderController::class, 'TrackOrder'])->name('order.track');
 
 
 
