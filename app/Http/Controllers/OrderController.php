@@ -11,11 +11,11 @@ class OrderController extends Controller
     
     public function TrackOrder(Order $order)
     {
-        $address = $order->shippingAddress;
+        $order->load('items.product.images', 'shippingAddress');
 
-        logger($address);
+       
         
-        return Inertia::render('TrackOrder', [ 'Address' => $address]);
+        return Inertia::render('TrackOrder', ['order' => $order]);
     }
     
 }

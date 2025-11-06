@@ -19,16 +19,18 @@ const throttle = (func, delay) => {
   };
 };
 
-const TrackOrder = ({ Address }) => {
+const TrackOrder = ({ order }) => {
+
+  console.log(order);
   const [driverLocation, setDriverLocation] = useState(null);
   const [directions, setDirections] = useState(null);
   const directionsServiceRef = useRef(null);
   const lastDriverLocationRef = useRef(null);
 
-  // Convert address to proper Google Maps format
-  const customerLocation = Address ? {
-    lat: parseFloat(Address.lat),
-    lng: parseFloat(Address.lng)
+  // Convert order.shipping_address to proper Google Maps format
+  const customerLocation = order.shipping_address ? {
+    lat: parseFloat(order.shipping_address.lat),
+    lng: parseFloat(order.shipping_address.lng)
   } : null;
 
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
@@ -109,7 +111,7 @@ const TrackOrder = ({ Address }) => {
   return (
 <section class="bg-white py-8 antialiased dark:bg-gray-800 md:py-16">
   <div class="mx-auto max-w-screen-xl px-4 2xl:px-0">
-    <h2 class="text-xl font-semibold text-gray-800 dark:text-white sm:text-2xl">Delivery #ORD-957684673</h2>
+    <h2 class="text-xl font-semibold text-gray-800 dark:text-white sm:text-2xl">Delivery #{order.id}</h2>
 
     <div class="mt-6 sm:mt-8 lg:flex lg:gap-8">
       {/* Delivery Information Sidebar */}
@@ -122,13 +124,13 @@ const TrackOrder = ({ Address }) => {
             </div>
             <div class="min-w-0 flex-1">
               <h3 class="font-medium text-gray-800 dark:text-white">Customer Details</h3>
-              <p class="text-sm text-gray-600 dark:text-gray-400">Abdulhadi Heyru</p>
-              <p class="text-sm text-gray-600 dark:text-gray-400">+251973148191</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">{order.shipping_address.full_name}</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">{order.shipping_address.phone}</p>
             </div>
           </div>
         </div>
 
-        {/* Delivery Address */}
+        {/* Delivery order.shipping_address */}
         <div class="space-y-4 p-6">
           <div class="flex items-center gap-6">
             <div class="h-14 w-14 shrink-0 bg-green-100 rounded-full flex items-center justify-center">
@@ -136,42 +138,45 @@ const TrackOrder = ({ Address }) => {
             </div>
             <div class="min-w-0 flex-1">
               <h3 class="font-medium text-gray-800 dark:text-white">Delivery Address</h3>
-              <p class="text-sm text-gray-600 dark:text-gray-400">Addis Ababa Kotebe 02</p>
-              <p class="text-sm text-gray-600 dark:text-gray-400">Yeka, Addis Ababa</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">{order.shipping_address.address_line}</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">{order.shipping_address.region}</p>
             </div>
           </div>
         </div>
 
         {/* Order Items */}
         <div class="space-y-4 p-6">
-          <h3 class="font-medium text-gray-800 dark:text-white mb-4">Order Items</h3>
-          
-          <div class="flex items-center justify-between gap-4 py-2">
+        <h3 class="font-medium text-gray-800 dark:text-white mb-4">Order Items</h3>
+        
+        {order?.items?.map((item, index) => (
+          <div key={item.id || index} class="flex items-center justify-between gap-4 py-2">
             <div class="flex items-center gap-3">
-              <div class="w-10 h-10 bg-gray-100 rounded flex items-center justify-center">
-                <span class="text-sm">🍕</span>
+              <div class="w-10 h-10 bg-gray-100 rounded flex items-center justify-center overflow-hidden">
+                {item.product?.images?.[0]?.image_path ? (
+                  <img 
+                    src={item.product.images[0].image_path} 
+                    alt={item.product.name}
+                    class="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span class="text-sm">⌚</span>
+                )}
               </div>
               <div>
-                <p class="text-sm font-medium text-gray-800 dark:text-white">Large Pizza</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400">Extra cheese</p>
+                <p class="text-sm font-medium text-gray-800 dark:text-white">
+                  {item.product?.name || "Product"}
+                </p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                  ${item.price || item.subtotal}
+                </p>
               </div>
             </div>
-            <p class="text-base font-normal text-gray-800 dark:text-white">x1</p>
+            <p class="text-base font-normal text-gray-800 dark:text-white">
+              x{item.quantity || 1}
+            </p>
           </div>
-
-          <div class="flex items-center justify-between gap-4 py-2">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 bg-gray-100 rounded flex items-center justify-center">
-                <span class="text-sm">🥤</span>
-              </div>
-              <div>
-                <p class="text-sm font-medium text-gray-800 dark:text-white">Cola Drink</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400">500ml</p>
-              </div>
-            </div>
-            <p class="text-base font-normal text-gray-800 dark:text-white">x2</p>
-          </div>
-        </div>
+        ))}
+      </div>
 
         {/* Special Instructions */}
         <div class="space-y-4 p-6">
@@ -206,7 +211,7 @@ const TrackOrder = ({ Address }) => {
         {/* Map Section */}
         <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800 mb-6">
           <div style={containerStyle}>
-            <GoogleMap
+            {/* <GoogleMap
               mapContainerStyle={containerStyle}
               center={mapCenter}
               zoom={14}
@@ -276,7 +281,7 @@ const TrackOrder = ({ Address }) => {
                   }}
                 />
               )}
-            </GoogleMap>
+            </GoogleMap> */}
           </div>
         </div>
 
