@@ -121,6 +121,7 @@ class PaymentController extends Controller
 
                         $order = $payment->order;
                         $order->update([
+                            'user_id' => auth()->id(),
                             'payment_status' => 'paid',
                             'status' => 'paid',
                         ]);

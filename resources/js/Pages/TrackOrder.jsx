@@ -1,10 +1,14 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { GoogleMap, Marker, DirectionsRenderer, useJsApiLoader } from '@react-google-maps/api';
+import { Inertia } from '@inertiajs/inertia';
+import echo from '../echo';
 
 const containerStyle = {
   width: '100%',
   height: '400px',
 };
+
+// const Channel2=  echo.channel(`order.${user}`);
 
 // Throttle function to limit API calls
 const throttle = (func, delay) => {
@@ -19,9 +23,10 @@ const throttle = (func, delay) => {
   };
 };
 
-const TrackOrder = ({ order }) => {
+const TrackOrder = ({ order,userId }) => {
 
-  console.log(order);
+  const Channel2 =  echo.channel(`order.${userId}`);
+
   const [driverLocation, setDriverLocation] = useState(null);
   const [directions, setDirections] = useState(null);
   const directionsServiceRef = useRef(null);
@@ -38,6 +43,20 @@ const TrackOrder = ({ order }) => {
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: apiKey,
   });
+
+
+    const updateStatus = (status) => {
+
+    try {
+          Inertia.put(`/orders/${order.id}/update-status`, { status }, {
+           preserveScroll: true,
+        });
+
+    } catch (error) {
+      console.error('Error updating order status:', error);
+
+    }
+  };
 
   // Memoized directions fetch function
   const fetchDirections = useCallback(throttle((origin, destination) => {
@@ -60,6 +79,8 @@ const TrackOrder = ({ order }) => {
       }
     );
   }, 2000), []); // Only fetch directions every 2 seconds
+
+
 
   // Track driver location in real-time
   useEffect(() => {
@@ -95,6 +116,8 @@ const TrackOrder = ({ order }) => {
     return () => navigator.geolocation.clearWatch(watchId);
   }, []);
 
+
+
   // Fetch route from driver to customer - OPTIMIZED
   useEffect(() => {
     if (!isLoaded || !driverLocation || !customerLocation) return;
@@ -102,8 +125,11 @@ const TrackOrder = ({ order }) => {
     fetchDirections(driverLocation, customerLocation);
   }, [isLoaded, driverLocation, customerLocation, fetchDirections]);
 
+
+
+
   if (loadError) return <div>Error loading maps</div>;
-  if (!isLoaded) return <div>Loading Map...</div>;
+
 
   // Fallback center if no driver location yet
   const mapCenter = driverLocation || customerLocation || { lat: 0, lng: 0 };
@@ -187,22 +213,16 @@ const TrackOrder = ({ order }) => {
         {/* Delivery Actions */}
         <div class="space-y-4 bg-gray-50 p-6 dark:bg-gray-800">
           <div class="grid grid-cols-2 gap-3">
-            <button class="w-full rounded-lg bg-blue-600 px-4 py-3 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-700 dark:hover:bg-blue-800 dark:focus:ring-blue-800">
+            <button onClick={() => updateStatus('picked_up')}
+                class="w-full rounded-lg bg-blue-600 px-4 py-3 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-700 dark:hover:bg-blue-800 dark:focus:ring-blue-800">
               Start Delivery
             </button>
-            <button class="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-800 hover:bg-gray-100 focus:z-10 focus:outline-none focus:ring-4 focus:ring-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white dark:focus:ring-gray-700">
-              Navigate
+            <button onClick={()=> updateStatus('delivered')}  class="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-800 hover:bg-gray-100 focus:z-10 focus:outline-none focus:ring-4 focus:ring-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white dark:focus:ring-gray-700">
+            Arrived
             </button>
           </div>
           
-          <div class="grid grid-cols-2 gap-3">
-            <button class="w-full rounded-lg bg-green-600 px-4 py-3 text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-300 dark:bg-green-700 dark:hover:bg-green-800 dark:focus:ring-green-800">
-              Arrived
-            </button>
-            <button class="w-full rounded-lg bg-red-600 px-4 py-3 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-300 dark:bg-red-700 dark:hover:bg-red-800 dark:focus:ring-red-800">
-              Complete
-            </button>
-          </div>
+         
         </div>
       </div>
 
@@ -211,7 +231,8 @@ const TrackOrder = ({ order }) => {
         {/* Map Section */}
         <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800 mb-6">
           <div style={containerStyle}>
-            {/* <GoogleMap
+            {isLoaded && (
+            <GoogleMap
               mapContainerStyle={containerStyle}
               center={mapCenter}
               zoom={14}
@@ -281,7 +302,8 @@ const TrackOrder = ({ order }) => {
                   }}
                 />
               )}
-            </GoogleMap> */}
+            </GoogleMap>
+            )}
           </div>
         </div>
 

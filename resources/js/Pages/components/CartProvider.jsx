@@ -23,6 +23,7 @@ export function CartProvider({ children, initialCart, identifier,user }) {
       ? echo.private(`cart.${identifier}`)
       : echo.channel(`cart.${identifier}`);
 
+
     
     channel.listen('.CartUpdated', (event) => {
       
