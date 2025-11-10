@@ -14,6 +14,7 @@ export function CartProvider({ children, initialCart, identifier,user }) {
   );
 
 	 useEffect(() => {
+
     if (!identifier) return;
 
     console.log( `Listening to ${user?'private':'public'} channel: `, `cart.${identifier}`);

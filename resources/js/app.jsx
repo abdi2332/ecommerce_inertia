@@ -2,6 +2,7 @@ import '../css/app.css';
 import './bootstrap';
 import { StockProvider } from './Pages/components/StockProvider';
 import { CartProvider } from './Pages/components/CartProvider';
+import {StatusProvider} from './Pages/components/StatusProvider';
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
@@ -23,6 +24,7 @@ createInertiaApp({
 
         root.render(
      <StockProvider>
+      <StatusProvider  user={props.initialPage.props.auth.user} >
         <CartProvider
           user={props.initialPage.props.auth.user} 
           initialCart={props.initialPage.props.cart}        // from Laravel Inertia::share
@@ -31,6 +33,7 @@ createInertiaApp({
           <ToastContainer position="top-right" autoClose={1500}/>
           <App {...props} />
         </CartProvider>
+        </StatusProvider>
       </StockProvider>
     );
     },

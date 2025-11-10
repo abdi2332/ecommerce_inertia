@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { GoogleMap, Marker, DirectionsRenderer, useJsApiLoader } from '@react-google-maps/api';
 import { Inertia } from '@inertiajs/inertia';
 import echo from '../echo';
+import axios from 'axios';
 
 const containerStyle = {
   width: '100%',
@@ -45,18 +46,15 @@ const TrackOrder = ({ order,userId }) => {
   });
 
 
-    const updateStatus = (status) => {
-
+  const updateStatus = async (status) => {
     try {
-          Inertia.put(`/orders/${order.id}/update-status`, { status }, {
-           preserveScroll: true,
-        });
-
+        await axios.put(`/orders/${order.id}/update-status`, { status });
+        // broadcast listener will update the UI automatically
     } catch (error) {
-      console.error('Error updating order status:', error);
-
+        console.error('Error updating order status:', error);
     }
-  };
+};
+
 
   // Memoized directions fetch function
   const fetchDirections = useCallback(throttle((origin, destination) => {

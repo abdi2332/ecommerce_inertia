@@ -4,6 +4,7 @@ import { useStock } from './StockProvider';
 import { Link } from '@inertiajs/react';
 import { useCart } from './CartProvider';
 import { toast } from 'react-toastify';
+import axios from 'axios';
 
 
 
@@ -16,17 +17,21 @@ const ProductHit = ({ hit, }) => {
 
 
 
-  const updateQty = (productId, change) => {
-
-    Inertia.post('/cart/add', { product_id: productId, change }, {
-      preserveScroll: true, // keeps scroll position
-      onSuccess: () => {
-
-      }, // Inertia will re-render page with updated props
-    });
-    toast.success('Added to cart');
-
+  
+  const updateQty = async (productId, change) => {
+    try {
+      await axios.post('/cart/add', { product_id: productId, change });
+  
+      // Optionally, update local state if needed
+      // setCart(updatedCart) if using a context or state
+  
+      toast.success('Added to cart');
+    } catch (error) {
+      console.error('Error updating cart:', error);
+      toast.error('Failed to update cart');
+    }
   };
+  
 
 
 

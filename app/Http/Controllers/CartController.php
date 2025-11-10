@@ -37,7 +37,7 @@ class CartController extends Controller
             $this->cartService->addItem($identifier, $productId, $change);
         }
 
-        return Inertia::render('Welcome');
+        return response()->noContent();
     }
 
     public function updateItem(Request $request)
@@ -50,7 +50,7 @@ class CartController extends Controller
 
         $this->cartService->updateQuantity($identifier, $productId, $change);
 
-        return Inertia::render('Welcome');
+         return response()->noContent();
     }
 
     public function removeItem(Request $request)
@@ -60,6 +60,6 @@ class CartController extends Controller
 
         $this->cartService->removeItem($identifier, $productId);
 
-        return Inertia::render('Welcome');
+         return response()->noContent();
     }
 }

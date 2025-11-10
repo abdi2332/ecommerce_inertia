@@ -34,13 +34,16 @@ class OrderController extends Controller
                 'status' => $validated['status'],
                 'changed_at' => now(),
         ]);
+
+        logger('Broadcasting Delivery Status:', ['status' => $validated['status'], 'user_id' => $order->user_id, 'order_id' => $order->id]);
         
 
-       broadcast( new DeliveryStatus($validated['status'], $order->user_id, $order->id));
+        broadcast(new DeliveryStatus( $validated['status'], (int) $order->user_id,  (int) $order->id ));
 
         
 
-        return back()->with('success', 'Order status updated successfully.');
+        return response()->noContent();
+
     }
     
 }

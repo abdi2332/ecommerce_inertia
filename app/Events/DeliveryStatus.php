@@ -15,34 +15,33 @@ class DeliveryStatus implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    /**
-     * Create a new event instance.
-     */
-
-     public $status;
-
-     public $userId;
-
-     public $orderId;
-
-
+    public $status;
+    public $userId;
+    public $orderId;
 
     public function __construct($status, $userId, $orderId)
-    
     {
+        // ADD THESE TYPE CASTS - This is the fix!
         $this->status = $status;
-        $this->userId = $userId;
-        $this->orderId = $orderId;
+        $this->userId = (int) $userId;    // ← CAST TO INTEGER
+        $this->orderId = (int) $orderId;  // ← CAST TO INTEGER
+        
+        // Optional: Log to verify
+        logger('DeliveryStatus Event Created:', [
+            'user_id' => $this->userId,
+            'user_id_type' => gettype($this->userId),
+            'order_id' => $this->orderId,
+            'status' => $this->status
+        ]);
     }
 
-    /**
-     * Get the channels the event should broadcast on.
-     *
-     * @return array<int, \Illuminate\Broadcasting\Channel>
-     */
     public function broadcastOn(): array
     {
-      
+        logger('Creating Private Channel:', [
+            'channel_name' => "orders.{$this->userId}",
+            'user_id' => $this->userId
+        ]);
+        
         return [
             new PrivateChannel("orders.{$this->userId}"),
         ];
