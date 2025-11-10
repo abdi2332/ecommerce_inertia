@@ -114,7 +114,20 @@ const TrackOrder = ({ order,userId }) => {
     return () => navigator.geolocation.clearWatch(watchId);
   }, []);
 
-
+// Broadcast driver location to customer
+useEffect(() => {
+  if (!driverLocation || !order?.id) return;
+  
+  const broadcastLocation = throttle(async (location) => {
+    await axios.post(`/api/orders/${order.id}/driver-location`, {
+      lat: location.lat,
+      lng: location.lng,
+      timestamp: new Date().toISOString()
+    });
+  }, 10000); // Every 10 seconds
+  
+  broadcastLocation(driverLocation);
+}, [driverLocation, order?.id]);
 
   // Fetch route from driver to customer - OPTIMIZED
   useEffect(() => {

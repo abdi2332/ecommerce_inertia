@@ -21,6 +21,16 @@ class OrderController extends Controller
     }
 
 
+    public function TrackDriver(Order $order)
+    {
+        $order->load('items.product.images', 'shippingAddress');
+
+       
+        
+        return Inertia::render('CustomerTrack', ['order' => $order, 'userId' => auth()->id()]);
+    }
+
+
     public function updateStatus(Request $request, Order $order)
     {
 

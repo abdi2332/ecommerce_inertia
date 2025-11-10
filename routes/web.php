@@ -52,6 +52,7 @@ Route::get('/payment/chapa/callback', [PaymentController::class, 'chapaCallback'
 Route::get('/payment/chapa/return', [PaymentController::class, 'chapaReturn'])->name('payment.chapa.return');
 Route::get('/order/success/{order}', [PaymentController::class, 'orderSuccess'])->name('order.success');
 Route::get('Trackorder/{order}', [OrderController::class, 'TrackOrder'])->name('order.track');
+Route::get('/customerTrack/{order}', [OrderController::class,'TrackDriver'])->name('driver.track');
 Route::put('/orders/{order}/update-status', [OrderController::class, 'updateStatus']);
 
 

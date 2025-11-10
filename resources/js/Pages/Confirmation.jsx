@@ -3,6 +3,7 @@ import Footer from "@/Layouts/Footer";
 import { useCart } from "./components/CartProvider";
 import { router } from "@inertiajs/react";
 import { toast } from "react-toastify";
+import { Link } from '@inertiajs/react'
 
 const Confirmation = ({ order }) => {
     const { cart, setCart } = useCart();
@@ -33,7 +34,7 @@ const Confirmation = ({ order }) => {
                     <div className="space-y-4 sm:space-y-2 rounded-lg border border-gray-100 bg-gray-50 p-6 dark:border-gray-700 dark:bg-gray-800 mb-6 md:mb-8">
                         {[
                             ["Date", order.created_at],
-                            ["Payment Method", order.payment_method=="chapa"?"Chapa":"Cash on Delivery"],
+                            ["Payment Method", order.payment_method == "chapa" ? "Chapa" : "Cash on Delivery"],
                             ["Name", order.shipping_address.full_name],
                             [
                                 "Address",
@@ -56,12 +57,12 @@ const Confirmation = ({ order }) => {
                     </div>
 
                     <div className="flex items-center space-x-4">
-                        <a
-                            href="#"
+                        <Link
+                            href={route('driver.track', order.id)}
                             className="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800"
                         >
                             Track your order
-                        </a>
+                        </Link>
 
                         <a
                             href="/"
