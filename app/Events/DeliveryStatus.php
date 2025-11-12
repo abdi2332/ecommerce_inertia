@@ -1,0 +1,62 @@
+<?php
+
+namespace App\Events;
+
+use Illuminate\Broadcasting\Channel;
+use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Broadcasting\PresenceChannel;
+use Illuminate\Broadcasting\PrivateChannel;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
+use Illuminate\Foundation\Events\Dispatchable;
+use Illuminate\Queue\SerializesModels;
+
+class DeliveryStatus implements ShouldBroadcastNow
+{
+    use Dispatchable, InteractsWithSockets, SerializesModels;
+
+    public $status;
+    public $userId;
+    public $orderId;
+
+    public function __construct($status, $userId, $orderId)
+    {
+        // ADD THESE TYPE CASTS - This is the fix!
+        $this->status = $status;
+        $this->userId = (int) $userId;    // ← CAST TO INTEGER
+        $this->orderId = (int) $orderId;  // ← CAST TO INTEGER
+        
+        // Optional: Log to verify
+        logger('DeliveryStatus Event Created:', [
+            'user_id' => $this->userId,
+            'user_id_type' => gettype($this->userId),
+            'order_id' => $this->orderId,
+            'status' => $this->status
+        ]);
+    }
+
+    public function broadcastOn(): array
+    {
+        logger('Creating Private Channel:', [
+            'channel_name' => "orders.{$this->userId}",
+            'user_id' => $this->userId
+        ]);
+        
+        return [
+            new PrivateChannel("orders.{$this->userId}"),
+        ];
+    }
+
+    public function broadcastWith(){
+        return [
+            'status' => $this->status,
+            'order_id' => $this->orderId,
+            'user_id' => $this->userId,
+        ];
+    }
+
+    public function broadcastAs(): string
+    {
+        return 'DeliveryStatus';
+    }
+}

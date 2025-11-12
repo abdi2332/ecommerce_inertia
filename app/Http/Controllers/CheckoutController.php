@@ -12,6 +12,7 @@ use App\Services\CartService;
 use Illuminate\Support\Facades\DB;
 use App\Models\Cart;
 use App\Models\CartItem;
+use Illuminate\Support\Facades\Http;
 
 class CheckoutController extends Controller
 {
@@ -63,6 +64,10 @@ class CheckoutController extends Controller
 
         try {
             
+            $coordinates = $this->getCoordinatesFromAddress($validated['address_line']);
+
+            logger('Geocoded Coordinates: ' . json_encode($coordinates));
+
             $address = Address::create([
                 'user_id' => auth()->id(),
                 'full_name' => $validated['full_name'],
@@ -71,8 +76,10 @@ class CheckoutController extends Controller
                 'city' => $validated['city'],
                 'address_line' => $validated['address_line'],
                 'is_default' => $validated['is_default'] ?? false,
+                'lat' => $coordinates['lat'] ?? null,
+                'lng' => $coordinates['lng'] ?? null,
             ]);
-
+            
         
 
          
@@ -118,12 +125,26 @@ class CheckoutController extends Controller
         }
     }
 
-    // public function success()
-    // {
-    //     return Inertia::render('OrderSuccess', [
-    //         'message' => session('success') ?? 'Your order has been placed successfully!',
-    //     ]);
-    // }
+   protected function getCoordinatesFromAddress(string $address): ?array
+   {
+       $response = Http::get('https://maps.googleapis.com/maps/api/geocode/json', [
+           'address' => $address,
+           'key' => config('services.google.maps_key'),
+       ]);
+   
+       $data = $response->json();
+
+       logger('Geocoding response: ' . json_encode($data));
+   
+       if (!empty($data['results'][0]['geometry']['location'])) {
+           return [
+               'lat' => $data['results'][0]['geometry']['location']['lat'],
+               'lng' => $data['results'][0]['geometry']['location']['lng'],
+           ];
+       }
+   
+       return null;
+   }
      
     
 }

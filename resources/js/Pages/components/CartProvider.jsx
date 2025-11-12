@@ -14,6 +14,7 @@ export function CartProvider({ children, initialCart, identifier,user }) {
   );
 
 	 useEffect(() => {
+
     if (!identifier) return;
 
     console.log( `Listening to ${user?'private':'public'} channel: `, `cart.${identifier}`);
@@ -22,6 +23,7 @@ export function CartProvider({ children, initialCart, identifier,user }) {
     const channel = user
       ? echo.private(`cart.${identifier}`)
       : echo.channel(`cart.${identifier}`);
+
 
     
     channel.listen('.CartUpdated', (event) => {

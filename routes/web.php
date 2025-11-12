@@ -13,6 +13,8 @@ use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\Redis;
 use App\Services\CartService;
 use App\Events\StockUpdated;
+use App\Http\Controllers\GoogleAuthController;
+use App\Http\Controllers\OrderController;
 
 Route::get('/', [ProductController::class, 'index'])->name('welcome');
 
@@ -49,6 +51,9 @@ Route::post('/payment/chapa/{order}', [PaymentController::class, 'initializeChap
 Route::get('/payment/chapa/callback', [PaymentController::class, 'chapaCallback'])->name('payment.chapa.callback');
 Route::get('/payment/chapa/return', [PaymentController::class, 'chapaReturn'])->name('payment.chapa.return');
 Route::get('/order/success/{order}', [PaymentController::class, 'orderSuccess'])->name('order.success');
+Route::get('Trackorder/{order}', [OrderController::class, 'TrackOrder'])->name('order.track');
+Route::get('/customerTrack/{order}', [OrderController::class,'TrackDriver'])->name('driver.track');
+Route::put('/orders/{order}/update-status', [OrderController::class, 'updateStatus']);
 
 
 
@@ -77,6 +82,9 @@ Route::get('/stock/pending', function () {
 
     return response()->json($updates);
 });
+
+Route::get('auth/google', [GoogleAuthController::class, 'redirectToGoogle'])->name('auth.google');
+Route::get('auth/google/callback', [GoogleAuthController::class, 'handleGoogleCallback']);
 
 
 require __DIR__ . '/auth.php';

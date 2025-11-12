@@ -2,6 +2,7 @@ import { React, useState } from 'react'
 import { Link, usePage, } from '@inertiajs/react';
 import { Inertia } from '@inertiajs/inertia';
 import { useCart } from '@/Pages/components/CartProvider';
+import axios from 'axios';
 
 const Navbar = () => {
 
@@ -17,17 +18,26 @@ const Navbar = () => {
   const toggleUserDropdown = () => setIsUserDropdownOpen(!isUserDropdownOpen);
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
-  const updateQty = (productId, change) => {
-    // updateQuantity(productId, change);
-    Inertia.post('/item/add', { product_id: productId, change }, {
-      preserveScroll: true, // keeps scroll position
-      onSuccess: () => { }, // Inertia will re-render page with updated props
-    });
+  const updateQty = async (productId, change) => {
+    try {
+      await axios.post('/item/add', { product_id: productId, change });
+  
+      // Optionally, update local cart state if using context
+      // setCart(updatedCart);
+    } catch (error) {
+      console.error('Error updating cart quantity:', error);
+    }
   };
-
-  const removeItem = (productId) => {
-    // removeCartItem(productId);
-    Inertia.post('/item/remove', { product_id: productId }, { preserveScroll: true });
+  
+  const removeItem = async (productId) => {
+    try {
+      await axios.post('/item/remove', { product_id: productId });
+  
+      // Optionally, update local cart state
+      // setCart(updatedCart);
+    } catch (error) {
+      console.error('Error removing cart item:', error);
+    }
   };
 
 

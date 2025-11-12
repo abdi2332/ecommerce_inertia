@@ -35,5 +35,10 @@ class Order extends Model
     {
         return $this->belongsTo(Address::class, 'shipping_address_id');
     }
+
+    public function deliveryStatusHistories()
+    {
+        return $this->hasMany(DeliveryStatusHistory::class);
+    }
 }
 
