@@ -14,20 +14,23 @@ class OrderController extends Controller
     public function TrackOrder(Order $order)
     {
         $order->load('items.product.images', 'shippingAddress');
+   
 
        
         
-        return Inertia::render('TrackOrder', ['order' => $order, 'userId' => auth()->id()]);
+        return Inertia::render('TrackOrder', ['order' => $order, 'userId' => auth()->id(), 'status' => $statusHistoy ? $statusHistoy: null]);
     }
 
 
     public function TrackDriver(Order $order)
     {
         $order->load('items.product.images', 'shippingAddress');
+        
+        $statusHistoy= DeliveryStatusHistory::where('order_id', $order->id)->first();
 
        
         
-        return Inertia::render('CustomerTrack', ['order' => $order, 'userId' => auth()->id()]);
+        return Inertia::render('CustomerTrack', ['order' => $order, 'userId' => auth()->id(), 'status' => $statusHistoy ? $statusHistoy: null]);
     }
 
 
