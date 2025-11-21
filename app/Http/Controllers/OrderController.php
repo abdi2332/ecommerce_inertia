@@ -3,10 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Events\DeliveryStatus;
+use App\Events\DriverLocationUpdate;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Order;
 use App\Models\DeliveryStatusHistory;
+use App\Models\OrderTracking;
+use Illuminate\Support\Facades\Redis;
+
 
 class OrderController extends Controller
 {
@@ -15,10 +19,9 @@ class OrderController extends Controller
     {
         $order->load('items.product.images', 'shippingAddress');
    
-
        
         
-        return Inertia::render('TrackOrder', ['order' => $order, 'userId' => auth()->id(), 'status' => $statusHistoy ? $statusHistoy: null]);
+        return Inertia::render('TrackOrder', ['order' => $order, 'userId' => auth()->id(),]);
     }
 
 
@@ -57,6 +60,54 @@ class OrderController extends Controller
 
         return response()->noContent();
 
+    }
+
+   public function locateDriver(Request $request, Order $order)
+{
+    $locationData = [
+        'lat' => $request->input('lat'),
+        'lng' => $request->input('lng'),
+        'recorded_at' => now(),
+        'eta' => $request->input('eta'),
+        'eta_seconds' => $request->input('eta_seconds'),
+        'distance' => $request->input('distance'),
+        'distance_meters' => $request->input('distance_meters'),
+    ];
+
+    // Save to Redis
+    Redis::setex("order:{$order->id}:driver_location", 60, json_encode($locationData));
+
+
+    logger('Broadcasting Driver Location Update:', ['order_id' => $order->id, 'user_id' => $order->user_id, 'location' => $locationData]);
+
+    // Broadcast to customer
+    broadcast(new DriverLocationUpdate(
+        $order->id,
+        $locationData,
+        $order->user_id
+    ));
+
+    return response()->noContent();
+}
+
+    
+
+    public function updateETA(Order $order, Request $request){
+
+        $etaData = [
+            'eta' => $request->eta,
+            'eta_seconds' => $request->eta_seconds,
+            'distance' => $request->distance,
+            'distance_meters' => $request->distance_meters,
+            'timestamp' => $request->timestamp,
+            'order_id' => $order->id,
+        ];
+    
+        // Store in Redis with 1 hour expiration
+        Redis::setex("order:{$order->id}:eta", 3600, json_encode($etaData));
+    
+        // Broadcast to customer via WebSocket
+        // broadcast(new ETAUpdated($order, $etaData));
     }
     
 }

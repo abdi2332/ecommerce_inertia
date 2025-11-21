@@ -25,23 +25,12 @@ class DeliveryStatus implements ShouldBroadcastNow
         $this->status = $status;
         $this->userId = (int) $userId;    // ← CAST TO INTEGER
         $this->orderId = (int) $orderId;  // ← CAST TO INTEGER
-        
-        // Optional: Log to verify
-        logger('DeliveryStatus Event Created:', [
-            'user_id' => $this->userId,
-            'user_id_type' => gettype($this->userId),
-            'order_id' => $this->orderId,
-            'status' => $this->status
-        ]);
+     
     }
 
     public function broadcastOn(): array
     {
-        logger('Creating Private Channel:', [
-            'channel_name' => "orders.{$this->userId}",
-            'user_id' => $this->userId
-        ]);
-        
+      
         return [
             new PrivateChannel("orders.{$this->userId}"),
         ];

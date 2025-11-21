@@ -1,6 +1,13 @@
-import React from 'react'
+import React, { useState } from 'react'
+import echo from '../echo'
+import { usePage } from '@inertiajs/react'
 
 const CustomerTrack = ({ order,status }) => {
+
+    const [DriverLocation, setDriverLocation]= useState([])
+
+
+
 
     return (
         <section class="bg-white py-8 antialiased dark:bg-gray-900 md:py-16">

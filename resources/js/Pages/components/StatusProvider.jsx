@@ -10,16 +10,16 @@ export const StatusProvider = ({user, children}) => {
 
 	const [status, setStatus] = useState([])
 
-	console.log(user)
+
 
 	useEffect(() => {
 
 		if (!user) return;
 
-		const channel2 = echo.private(`orders.${user.id}`);
+		const channel = echo.private(`order.${user.id}`);
 
 		
-		channel2.listen('.DeliveryStatus', (e) => {
+		channel.listen('.DriverLocationUpdate', (e) => {
 			console.log('Delivery status updated:', e);
 		});
 

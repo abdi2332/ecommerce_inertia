@@ -71,6 +71,7 @@ class PaymentController extends Controller
 
                     $order->update([
                         'payment_status' => 'processing',
+                         'user_id' => auth()->id(),
                     ]);
 
                     DB::commit();
@@ -121,10 +122,11 @@ class PaymentController extends Controller
 
                         $order = $payment->order;
                         $order->update([
-                            'user_id' => auth()->id(),
                             'payment_status' => 'paid',
                             'status' => 'paid',
                         ]);
+
+                        logger('authenticated user id: '. auth()->id());
 
                         DeliveryStatusHistory::create([
                             'order_id' => $order->id,
