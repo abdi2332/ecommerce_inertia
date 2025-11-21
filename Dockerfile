@@ -16,11 +16,11 @@ WORKDIR /var/www/html
 # Copy Laravel files
 COPY . .
 
-# Install Laravel dependencies
-RUN composer install --no-dev --optimize-autoloader
+# Fix git ownership issue and install dependencies
+RUN git config --global --add safe.directory /var/www/html && \
+    composer install --no-dev --optimize-autoloader
 
 # Set permissions for storage, cache, and vendor
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/vendor
 
-# Ensure PHP-FPM runs as the container's main process
 CMD ["php-fpm"]
