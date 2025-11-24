@@ -47,4 +47,8 @@ class DriverResource extends Resource
             'edit' => EditDriver::route('/{record}/edit'),
         ];
     }
+    public static function canViewAny(): bool
+    {
+       return auth()->user()->hasRole('admin');
+    }
 }

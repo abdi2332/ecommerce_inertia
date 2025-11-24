@@ -3,18 +3,26 @@ import { Link } from '@inertiajs/react'
 import Navbar from '@/Layouts/Navbar'
 import { Inertia } from '@inertiajs/inertia';
 import Footer from '@/Layouts/Footer';
+import axios from 'axios';
+import { toast } from 'react-toastify';
 
 
 const ProductDetail = ({product,relatedProducts}) => {
 
 
-     const updateQty = (productId, change) => {
+      const updateQty = async (productId, change) => {
+    try {
+      await axios.post('/cart/add', { product_id: productId, change });
   
-        Inertia.post('/cart/add', { product_id: productId, change }, {
-          preserveScroll: true, // keeps scroll position
-          onSuccess: () => {}, // Inertia will re-render page with updated props
-        });
-      };
+      // Optionally, update local state if needed
+      // setCart(updatedCart) if using a context or state
+  
+      toast.success('Added to cart');
+    } catch (error) {
+      console.error('Error updating cart:', error);
+      toast.error('Failed to update cart');
+    }
+  };
 
 	return (
     <>
@@ -304,9 +312,9 @@ const ProductDetail = ({product,relatedProducts}) => {
       ))}
 
     </div>
-    <div class="w-full text-center">
+    {/* <div class="w-full text-center">
       <button type="button" class="rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-sm font-medium text-gray-800 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:outline-none focus:ring-4 focus:ring-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white dark:focus:ring-gray-700">Show more</button>
-    </div>
+    </div> */}
   </div>
 
 </section>
