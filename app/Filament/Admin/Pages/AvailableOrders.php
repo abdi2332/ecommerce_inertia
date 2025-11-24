@@ -73,4 +73,10 @@ class AvailableOrders extends Page implements HasTable
                 }),
         ];
     }
+
+    public static function canView(): bool
+    {
+        return auth()->user()->hasRole('driver');
+    }
+    
 }
