@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { GoogleMap, Marker, DirectionsRenderer, useJsApiLoader } from '@react-google-maps/api'
 import { useDriverLocation } from './components/StatusProvider'
+import { router } from '@inertiajs/react'
+import { useCart } from './components/CartProvider'
 
 const containerStyle = {
     width: '100%',
@@ -15,6 +17,13 @@ const CustomerTrack = ({ order, status }) => {
     const animationFrameRef = useRef(null)
     const previousLocationRef = useRef(null)
     const mapRef = useRef(null)
+    const { cart, setCart } = useCart();
+    
+        // toast.success("Order placed successfully!");
+        useEffect(() => {
+            setCart([]);
+            localStorage.removeItem("cart");
+        }, []);
 
     // Memoize customerLocation to prevent map re-centering on every render
     const customerLocation = useMemo(() => {
@@ -427,9 +436,25 @@ const CustomerTrack = ({ order, status }) => {
                             </ol>
 
                             <div class="gap-4 sm:flex sm:items-center">
-                                <button type="button" class="w-full rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-sm font-medium text-gray-900 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:outline-none focus:ring-4 focus:ring-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white dark:focus:ring-gray-700">Contact Driver</button>
-
-                                <a href="#" class="mt-4 flex w-full items-center justify-center rounded-lg bg-primary-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-primary-800 focus:outline-none focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800 sm:mt-0">Order Details</a>
+                              <a
+                                                      href="/"
+                                                      onClick={(e) => {
+                                                          e.preventDefault();
+                                                          // Clear frontend cart
+                                                          setCart([]);
+                                                          localStorage.removeItem("cart");
+                          
+                                                          // Redirect via Inertia to trigger fresh backend share data
+                                                          router.visit("/", {
+                                                              replace: true,
+                                                              preserveState: false,
+                                                              preserveScroll: false,
+                                                          });
+                                                      }}
+                                                      className="py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+                                                  >
+                                                      Return to shopping
+                                                  </a>
                             </div>
                         </div>
                     </div>
