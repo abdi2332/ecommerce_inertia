@@ -48,10 +48,12 @@ const Navbar = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-8">
             <div className="shrink-0">
-              <a href="" title="" className="">
-                <img className="block w-auto h-8 dark:hidden" src="https://flowbite.s3.amazonaws.com/blocks/e-commerce/logo-full.svg" alt="" />
-                <img className="hidden w-auto h-8 dark:block" src="https://flowbite.s3.amazonaws.com/blocks/e-commerce/logo-full-dark.svg" alt="" />
-              </a>
+              <a href="/" className="flex items-center">
+              <div className="h-8 w-8 me-3 bg-blue-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-lg">S</span>
+              </div>
+              <span className="self-center text-2xl font-bold whitespace-nowrap text-white">StyleHub</span>
+            </a>
             </div>
 
             {/* <ul className="hidden lg:flex items-center justify-start gap-6 md:gap-8 py-3 sm:justify-center">
@@ -167,7 +169,7 @@ const Navbar = () => {
             </div>
 
             {/* User Dropdown */}
-            <div className="relative">
+            {/* <div className="relative">
               <button
                 onClick={toggleUserDropdown}
                 type="button"
@@ -196,7 +198,7 @@ const Navbar = () => {
                   </div>
                 </div>
               )}
-            </div>
+            </div> */}
 
             {/* Mobile Menu Button */}
             {/* <button
