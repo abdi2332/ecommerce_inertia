@@ -79,6 +79,8 @@ class CheckoutController extends Controller
                 'lat' => $coordinates['lat'] ?? null,
                 'lng' => $coordinates['lng'] ?? null,
             ]);
+
+            logger( 'address created: '. json_encode($address));
             
         
 

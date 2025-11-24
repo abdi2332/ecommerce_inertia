@@ -49,11 +49,13 @@ Route::post('/chekout/store', [CheckoutController::class, 'store'])->name('check
 Route::get('/checkout/payment/{order}', [PaymentController::class, 'paymentPage'])->name('checkout.payment')->middleware('auth');
 Route::post('/payment/chapa/{order}', [PaymentController::class, 'initializeChapaPayment'])->name('payment.chapa.initialize');
 Route::get('/payment/chapa/callback', [PaymentController::class, 'chapaCallback'])->name('payment.chapa.callback');
-Route::get('/payment/chapa/return', [PaymentController::class, 'chapaReturn'])->name('payment.chapa.return');
-Route::get('/order/success/{order}', [PaymentController::class, 'orderSuccess'])->name('order.success');
-Route::get('Trackorder/{order}', [OrderController::class, 'TrackOrder'])->name('order.track');
-Route::get('/customerTrack/{order}', [OrderController::class,'TrackDriver'])->name('driver.track');
+Route::get('/payment/chapa/return', [PaymentController::class, 'chapaReturn'])->name('payment.chapa.return')->middleware('auth');
+Route::get('/order/success/{order}', [PaymentController::class, 'orderSuccess'])->name('order.success')->middleware('auth');
+Route::get('Trackorder/{order}', [OrderController::class, 'TrackOrder'])->name('order.track')->middleware('auth');
+Route::get('/customerTrack/{order}', [OrderController::class,'TrackDriver'])->name('driver.track')->middleware('auth');
 Route::put('/orders/{order}/update-status', [OrderController::class, 'updateStatus']);
+Route::post('/orders/{order}/driver-location',[OrderController::class,'locateDriver'])->name('locate.driver')->middleware('auth');
+Route::post('/orders/{order}/eta-update',[OrderController::class,'updateETA'])->name('update.eta')->middleware('auth');
 
 
 

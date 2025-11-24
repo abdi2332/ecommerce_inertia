@@ -16,7 +16,7 @@ Broadcast::channel('cart.{userId}', function ($user, $userId) {
 });
 
 
-Broadcast::channel('orders.{userId}', function ($user, $userId) {
+Broadcast::channel('order.{userId}', function ($user, $userId) {
     // Customer can access their own channel
     if ((int) $user->id === (int) $userId) {
         return true;
