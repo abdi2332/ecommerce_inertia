@@ -24,10 +24,15 @@ const TrackOrder = ({ order, userId }) => {
   const [directions, setDirections] = useState(null);
   const [eta, setEta] = useState(null);
   const [distance, setDistance] = useState(null);
-  
+  const [animatedDriverLocation, setAnimatedDriverLocation] = useState(null);
+  const [bearing, setBearing] = useState(0);
+
   const directionsServiceRef = useRef(null);
   const lastDriverLocationRef = useRef(null);
   const lastBroadcastRef = useRef(null);
+  const animationFrameRef = useRef(null);
+  const previousLocationRef = useRef(null);
+  const mapRef = useRef(null);
 
   const customerLocation = order.shipping_address ? {
     lat: parseFloat(order.shipping_address.lat),
@@ -40,12 +45,83 @@ const TrackOrder = ({ order, userId }) => {
     googleMapsApiKey: apiKey,
   });
 
+  // Calculate bearing between two points for car rotation
+  const calculateBearing = (start, end) => {
+    const startLat = start.lat * Math.PI / 180;
+    const startLng = start.lng * Math.PI / 180;
+    const endLat = end.lat * Math.PI / 180;
+    const endLng = end.lng * Math.PI / 180;
+
+    const dLng = endLng - startLng;
+    const y = Math.sin(dLng) * Math.cos(endLat);
+    const x = Math.cos(startLat) * Math.sin(endLat) -
+      Math.sin(startLat) * Math.cos(endLat) * Math.cos(dLng);
+
+    const bearing = Math.atan2(y, x) * 180 / Math.PI;
+    return (bearing + 360) % 360;
+  };
+
+  // Smooth animation from old position to new position
+  const animateMarker = useCallback((startPos, endPos, duration = 2000) => {
+    const startTime = Date.now();
+
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+
+      // Easing function for smooth movement
+      const easeProgress = progress < 0.5
+        ? 2 * progress * progress
+        : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+
+      const lat = startPos.lat + (endPos.lat - startPos.lat) * easeProgress;
+      const lng = startPos.lng + (endPos.lng - startPos.lng) * easeProgress;
+
+      setAnimatedDriverLocation({ lat, lng });
+
+      if (progress < 1) {
+        animationFrameRef.current = requestAnimationFrame(animate);
+      } else {
+        setAnimatedDriverLocation(endPos);
+      }
+    };
+
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+    }
+
+    animate();
+  }, []);
+
+  // Update driver location with smooth animation
+  useEffect(() => {
+    if (!driverLocation) return;
+
+    if (!animatedDriverLocation) {
+      // First time - set immediately
+      setAnimatedDriverLocation(driverLocation);
+      previousLocationRef.current = driverLocation;
+    } else {
+      // Animate from current position to new position
+      const newBearing = calculateBearing(animatedDriverLocation, driverLocation);
+      setBearing(newBearing);
+      animateMarker(animatedDriverLocation, driverLocation);
+      previousLocationRef.current = driverLocation;
+    }
+
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [driverLocation, animateMarker]);
+
   // Calculate ETA from directions
   const calculateETA = useCallback((directionsResult) => {
     if (directionsResult && directionsResult.routes && directionsResult.routes[0]) {
       const route = directionsResult.routes[0];
       const leg = route.legs[0];
-      
+
       if (leg) {
         const etaData = {
           text: leg.duration.text,
@@ -55,10 +131,10 @@ const TrackOrder = ({ order, userId }) => {
           text: leg.distance.text,
           value: leg.distance.value, // in meters
         };
-        
+
         setEta(etaData);
         setDistance(distanceData);
-        
+
         return {
           eta: etaData.text,
           eta_seconds: etaData.value,
@@ -86,7 +162,7 @@ const TrackOrder = ({ order, userId }) => {
         if (status === 'OK') {
           setDirections(result);
           const etaData = calculateETA(result);
-          
+
           // Broadcast ETA to customer
           if (etaData) {
             broadcastETA(etaData);
@@ -101,7 +177,7 @@ const TrackOrder = ({ order, userId }) => {
   // Broadcast ETA to customer
   const broadcastETA = useCallback(throttle(async (etaData) => {
     if (!order?.id) return;
-    
+
     try {
       await axios.post(`/orders/${order.id}/eta-update`, {
         ...etaData,
@@ -115,24 +191,24 @@ const TrackOrder = ({ order, userId }) => {
   // Broadcast driver location and ETA
   const broadcastLocationAndETA = useCallback(throttle(async (location) => {
     if (!order?.id) return;
-    
+
     const broadcastData = {
       lat: location.lat,
       lng: location.lng,
       timestamp: new Date().toISOString(),
     };
-    
+
     // Include ETA if available
     if (eta) {
       broadcastData.eta = eta.text;
       broadcastData.eta_seconds = eta.value;
     }
-    
+
     if (distance) {
       broadcastData.distance = distance.text;
       broadcastData.distance_meters = distance.value;
     }
-    
+
     try {
       await axios.post(`/orders/${order.id}/driver-location`, broadcastData);
       lastBroadcastRef.current = new Date().getTime();
@@ -154,11 +230,11 @@ const TrackOrder = ({ order, userId }) => {
           lat: position.coords.latitude,
           lng: position.coords.longitude,
         };
-        
-        if (!lastDriverLocationRef.current || 
-            Math.abs(newLocation.lat - lastDriverLocationRef.current.lat) > 0.0001 ||
-            Math.abs(newLocation.lng - lastDriverLocationRef.current.lng) > 0.0001) {
-          
+
+        if (!lastDriverLocationRef.current ||
+          Math.abs(newLocation.lat - lastDriverLocationRef.current.lat) > 0.0001 ||
+          Math.abs(newLocation.lng - lastDriverLocationRef.current.lng) > 0.0001) {
+
           setDriverLocation(newLocation);
           lastDriverLocationRef.current = newLocation;
         }
@@ -166,10 +242,10 @@ const TrackOrder = ({ order, userId }) => {
       (err) => {
         console.error('Geolocation error:', err);
       },
-      { 
-        enableHighAccuracy: true, 
+      {
+        enableHighAccuracy: true,
         maximumAge: 5000,
-        timeout: 15000 
+        timeout: 15000
       }
     );
 
@@ -181,20 +257,21 @@ const TrackOrder = ({ order, userId }) => {
   // Broadcast location and ETA when driver location changes
   useEffect(() => {
     if (!driverLocation || !order?.id) return;
-    
+
     broadcastLocationAndETA(driverLocation);
   }, [driverLocation, order?.id, broadcastLocationAndETA]);
 
   // Fetch route and calculate ETA
   useEffect(() => {
-    if (!isLoaded || !driverLocation || !customerLocation) return;
+    if (!isLoaded || !animatedDriverLocation || !customerLocation) return;
 
-    fetchDirections(driverLocation, customerLocation);
-  }, [isLoaded, driverLocation, customerLocation, fetchDirections]);
+    fetchDirections(animatedDriverLocation, customerLocation);
+  }, [isLoaded, animatedDriverLocation, customerLocation, fetchDirections]);
 
   if (loadError) return <div>Error loading maps</div>;
 
-  const mapCenter = driverLocation || customerLocation || { lat: 0, lng: 0 };
+  const mapCenter = animatedDriverLocation || customerLocation || { lat: 0, lng: 0 };
+
 
   return (
     <section className="bg-white py-8 antialiased dark:bg-gray-800 md:py-16">
@@ -256,14 +333,14 @@ const TrackOrder = ({ order, userId }) => {
             {/* Order Items */}
             <div className="space-y-4 p-6">
               <h3 className="font-medium text-gray-800 dark:text-white mb-4">Order Items</h3>
-              
+
               {order?.items?.map((item, index) => (
                 <div key={item.id || index} className="flex items-center justify-between gap-4 py-2">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-gray-100 rounded flex items-center justify-center overflow-hidden">
                       {item.product?.images?.[0]?.image_path ? (
-                        <img 
-                          src={item.product.images[0].image_path} 
+                        <img
+                          src={item.product.images[0].image_path}
                           alt={item.product.name}
                           className="w-full h-full object-cover"
                         />
@@ -307,77 +384,81 @@ const TrackOrder = ({ order, userId }) => {
             <div className="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800 mb-6">
               <div style={containerStyle}>
                 {isLoaded && (
-                <GoogleMap
-                  mapContainerStyle={containerStyle}
-                  center={mapCenter}
-                  zoom={14}
-                  options={{
-                    zoomControl: true,
-                    mapTypeControl: false,
-                    streetViewControl: true,
-                    fullscreenControl: true,
-                    styles: [
-                      {
-                        "elementType": "geometry",
-                        "stylers": [{ "color": "#f5f5f5" }]
-                      },
-                      {
-                        "elementType": "labels.icon",
-                        "stylers": [{ "visibility": "off" }]
-                      },
-                      {
-                        "featureType": "poi",
-                        "stylers": [{ "visibility": "off" }]
-                      },
-                      {
-                        "featureType": "transit",
-                        "stylers": [{ "visibility": "off" }]
-                      }
-                    ]
-                  }}
-                >
-                  {driverLocation && (
-                    <Marker 
-                      position={driverLocation}
-                      icon={{
-                        url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
-                          <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-                            <circle cx="20" cy="20" r="18" fill="%233B82F6" stroke="white" stroke-width="3"/>
-                            <text x="20" y="26" text-anchor="middle" fill="white" font-size="14" font-weight="bold">🚗</text>
-                          </svg>
-                        `),
-                        scaledSize: new google.maps.Size(40, 40),
-                      }}
-                    />
-                  )}
-                  {customerLocation && (
-                    <Marker 
-                      position={customerLocation}
-                      icon={{
-                        url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
-                          <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-                            <circle cx="20" cy="20" r="18" fill="%2310B981" stroke="white" stroke-width="3"/>
-                            <text x="20" y="26" text-anchor="middle" fill="white" font-size="14" font-weight="bold">🏠</text>
-                          </svg>
-                        `),
-                        scaledSize: new google.maps.Size(40, 40),
-                      }}
-                    />
-                  )}
-                  {directions && (
-                    <DirectionsRenderer 
-                      directions={directions}
-                      options={{
-                        suppressMarkers: true,
-                        polylineOptions: {
-                          strokeColor: "#3B82F6",
-                          strokeWeight: 5,
-                          strokeOpacity: 0.7
+                  <GoogleMap
+                    mapContainerStyle={containerStyle}
+                    center={mapCenter}
+                    zoom={13}
+                    onLoad={(map) => { mapRef.current = map }}
+                    options={{
+                      zoomControl: true,
+                      mapTypeControl: false,
+                      streetViewControl: true,
+                      fullscreenControl: true,
+                      styles: [
+                        {
+                          "elementType": "geometry",
+                          "stylers": [{ "color": "#f5f5f5" }]
+                        },
+                        {
+                          "elementType": "labels.icon",
+                          "stylers": [{ "visibility": "off" }]
+                        },
+                        {
+                          "featureType": "poi",
+                          "stylers": [{ "visibility": "off" }]
+                        },
+                        {
+                          "featureType": "transit",
+                          "stylers": [{ "visibility": "off" }]
                         }
-                      }}
-                    />
-                  )}
-                </GoogleMap>
+                      ]
+                    }}
+                  >
+                    {animatedDriverLocation && (
+                      <Marker
+                        position={animatedDriverLocation}
+                        icon={{
+                          url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
+                              <text x="20" y="30" font-size="32" text-anchor="middle">🚗</text>
+                            </svg>
+                          `),
+                          scaledSize: new google.maps.Size(40, 40),
+                          anchor: new google.maps.Point(20, 20),
+                        }}
+                        title="Driver"
+                      />
+                    )}
+                    {customerLocation && (
+                      <Marker
+                        position={customerLocation}
+                        icon={{
+                          url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                            <svg width="48" height="48" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                              <circle cx="24" cy="24" r="20" fill="#10B981" stroke="white" stroke-width="3"/>
+                              <path d="M24 16 L24 20 M20 24 L28 24 M24 28 L24 32 M16 24 L20 24 M28 24 L32 24" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                          `),
+                          scaledSize: new google.maps.Size(48, 48),
+                          anchor: new google.maps.Point(24, 24),
+                        }}
+                        title="Delivery Location"
+                      />
+                    )}
+                    {directions && (
+                      <DirectionsRenderer
+                        directions={directions}
+                        options={{
+                          suppressMarkers: true,
+                          polylineOptions: {
+                            strokeColor: "#3B82F6",
+                            strokeWeight: 5,
+                            strokeOpacity: 0.7
+                          }
+                        }}
+                      />
+                    )}
+                  </GoogleMap>
                 )}
               </div>
             </div>
@@ -401,7 +482,7 @@ const TrackOrder = ({ order, userId }) => {
                 <li className="mb-10 ms-6">
                   <span className="absolute -start-3 flex h-6 w-6 items-center justify-center rounded-full bg-primary-100 ring-8 ring-white dark:bg-primary-800 dark:ring-gray-800">
                     <svg className="h-4 w-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                      <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h6l2 4m-8-4v8m0-8V6a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v9h2m8 0H9m4 0h2m4 0h2v-4m0 0h-5m3.5 5.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Zm-10 0a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z"/>
+                      <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h6l2 4m-8-4v8m0-8V6a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v9h2m8 0H9m4 0h2m4 0h2v-4m0 0h-5m3.5 5.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Zm-10 0a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z" />
                     </svg>
                   </span>
                   <h4 className="mb-0.5 text-base font-semibold text-gray-800 dark:text-white">On the Way</h4>
@@ -419,7 +500,7 @@ const TrackOrder = ({ order, userId }) => {
                 <li className="ms-6">
                   <span className="absolute -start-3 flex h-6 w-6 items-center justify-center rounded-full bg-gray-100 ring-8 ring-white dark:bg-gray-700 dark:ring-gray-800">
                     <svg className="h-4 w-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                      <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m4 12 8-8 8 8M6 10.5V19a1 1 0 0 0 1 1h3v-3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3h3a1 1 0 0 0 1-1v-8.5"/>
+                      <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m4 12 8-8 8 8M6 10.5V19a1 1 0 0 0 1 1h3v-3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3h3a1 1 0 0 0 1-1v-8.5" />
                     </svg>
                   </span>
                   <h4 className="mb-0.5 text-base font-semibold text-gray-800 dark:text-white">Delivery Complete</h4>
