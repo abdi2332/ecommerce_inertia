@@ -288,7 +288,7 @@ const TrackOrder = ({ order, userId }) => {
             </div>
 
             {/* Delivery Actions */}
-            <div className="space-y-4 bg-gray-50 p-6 dark:bg-gray-800">
+            {/* <div className="space-y-4 bg-gray-50 p-6 dark:bg-gray-800">
               <div className="grid grid-cols-2 gap-3">
                 <button onClick={() => updateStatus('picked_up')}
                     className="w-full rounded-lg bg-blue-600 px-4 py-3 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-700 dark:hover:bg-blue-800 dark:focus:ring-blue-800">
@@ -298,7 +298,7 @@ const TrackOrder = ({ order, userId }) => {
                 Arrived
                 </button>
               </div>
-            </div>
+            </div> */}
           </div>
 
           {/* Map & Timeline Section */}
