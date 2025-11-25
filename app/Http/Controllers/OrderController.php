@@ -51,10 +51,10 @@ class OrderController extends Controller
                 'changed_at' => now(),
         ]);
 
-        logger('Broadcasting Delivery Status:', ['status' => $validated['status'], 'user_id' => $order->user_id, 'order_id' => $order->id]);
+        // logger('Broadcasting Delivery Status:', ['status' => $validated['status'], 'user_id' => $order->user_id, 'order_id' => $order->id]);
         
 
-        broadcast(new DeliveryStatus( $validated['status'], (int) $order->user_id,  (int) $order->id ));
+        // broadcast(new DeliveryStatus( $validated['status'], (int) $order->user_id,  (int) $order->id ));
 
         
 
