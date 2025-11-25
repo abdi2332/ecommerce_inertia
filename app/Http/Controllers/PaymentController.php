@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Events\StockUpdated;
+use App\Jobs\ProcessOrderJob;
 use App\Models\DeliveryStatusHistory;
 use App\Models\Order;
 use App\Models\Payment;
@@ -73,6 +74,8 @@ class PaymentController extends Controller
                         'payment_status' => 'processing',
                          'user_id' => auth()->id(),
                     ]);
+
+                    ProcessOrderJob::dispatch($order)->onQueue('orders');
 
                     DB::commit();
 
