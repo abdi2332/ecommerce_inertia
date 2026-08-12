@@ -1,48 +1,120 @@
 version: "3.8"
 
 services:
-    mysql:
-        image: mysql:8.0
-        container_name: laravel-mysql
-        restart: always
-        environment:
-            MYSQL_ROOT_PASSWORD: root
-            MYSQL_DATABASE: laravel_db
-            MYSQL_USER: laravel_user
-            MYSQL_PASSWORD: secret
-        ports:
-            - "3306:3306"
-        volumes:
-            - mysql_data:/var/lib/mysql
-            - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
-        networks:
-            - laravel
+  # 1. Nginx Reverse Proxy (HTTP & Reverb WebSockets)
+  nginx:
+    image: nginx:alpine
+    container_name: ecom_nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - /etc/letsencrypt:/etc/nginx/ssl:ro
+    depends_on:
+      - app
+      - reverb
+    networks:
+      - ecom_network
 
-    redis:
-        image: redis:7
-        container_name: laravel-redis
-        ports:
-            - "6379:6379"
-        networks:
-            - laravel
+  # 2. Main Laravel Application (PHP-FPM)
+  app:
+    build:
+      context: ./docker/php
+      dockerfile: Dockerfile
+    container_name: ecom_app
+    restart: always
+    working_dir: /var/www/html
+    user: laravel
+    volumes:
+      - ./:/var/www/html
+      - ./docker/php/custom.ini:/usr/local/etc/php/conf.d/custom.ini
+    networks:
+      - ecom_network
+    depends_on:
+      - mysql
+      - redis
 
-    typesense:
-        image: typesense/typesense:0.25.0
-        container_name: typesense
-        ports:
-            - "8108:8108"
-        volumes:
-            - typesense_data:/data
-        environment:
-            TYPESENSE_API_KEY: xyz
-            TYPESENSE_DATA_DIR: /data
-        networks:
-            - laravel
+  # 3. Laravel Reverb WebSocket Server
+  reverb:
+    build:
+      context: ./docker/php
+      dockerfile: Dockerfile
+    container_name: ecom_reverb
+    restart: always
+    working_dir: /var/www/html
+    user: laravel
+    command: php artisan reverb:start --host=0.0.0.0 --port=8080
+    volumes:
+      - ./:/var/www/html
+      - ./docker/php/custom.ini:/usr/local/etc/php/conf.d/custom.ini
+    networks:
+      - ecom_network
+    depends_on:
+      - mysql
+      - redis
+
+  # 4. Background Redis Queue Worker
+  queue:
+    build:
+      context: ./docker/php
+      dockerfile: Dockerfile
+    container_name: ecom_queue
+    restart: always
+    working_dir: /var/www/html
+    user: laravel
+    command: php artisan queue:work redis --sleep=3 --tries=3 --max-time=3600
+    volumes:
+      - ./:/var/www/html
+      - ./docker/php/custom.ini:/usr/local/etc/php/conf.d/custom.ini
+    networks:
+      - ecom_network
+    depends_on:
+      - mysql
+      - redis
+
+  # 5. MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: ecom_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-Secret123!}
+      MYSQL_DATABASE: ${DB_DATABASE:-ecommerce}
+      MYSQL_USER: ${DB_USERNAME:-ecom_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-Secret123!}
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - ecom_network
+
+  # 6. Redis (Cache, Sessions, Queues, Cart)
+  redis:
+    image: redis:7-alpine
+    container_name: ecom_redis
+    restart: always
+    networks:
+      - ecom_network
+
+  # 7. Typesense Search Engine
+  typesense:
+    image: typesense/typesense:26.0
+    container_name: ecom_typesense
+    restart: always
+    environment:
+      TYPESENSE_API_KEY: ${TYPESENSE_API_KEY:-your_secret_typesense_key}
+      TYPESENSE_DATA_DIR: /data
+    volumes:
+      - typesense_data:/data
+    networks:
+      - ecom_network
 
 networks:
-    laravel:
-        driver: bridge
+  ecom_network:
+    driver: bridge
 
 volumes:
-    mysql_data:
-    typesense_data:
+  db_data:
+  typesense_data:
