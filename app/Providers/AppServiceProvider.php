@@ -2,9 +2,10 @@
 
 namespace App\Providers;
 
+use App\Services\CartService;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
-use App\Services\CartService;
 use Inertia\Inertia;
 
 class AppServiceProvider extends ServiceProvider
@@ -22,13 +23,20 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-    public function boot(CartService $cartService): void
+    public function boot(): void
     {
-        Inertia::share([
-            'cart' => fn () => $cartService->getCartData($cartService->getCartIdentifier()),
-            'identifier' => fn () => auth()->id()? auth()->id():  session()->getId(),
+        if (config('app.env') !== 'local' || str_contains(config('app.url'), 'https://')) {
+            URL::forceScheme('https');
+        }
 
+        Inertia::share([
+            'cart' => function () {
+                $cartService = app(CartService::class);
+                return $cartService->getCartData($cartService->getCartIdentifier());
+            },
+            'identifier' => fn () => auth()->id() ?? session()->getId(),
         ]);
+
         Vite::prefetch(concurrency: 3);
     }
 }
