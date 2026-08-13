@@ -1,21 +1,45 @@
-# 1. Build frontend assets natively
-npm ci && npm run build
+FROM php:8.3-fpm
 
-# 2. Spin up containers
-docker compose up -d --build
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    zip \
+    unzip \
+    libzip-dev \
+    libpq-dev \
+    libicu-dev \
+    wget
 
-# 3. Install composer packages using your 'laravel' user
-docker exec -u laravel -it ecom_app composer install --no-dev --optimize-autoloader
+# Clear cache
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# 4. Set directory permissions
-docker exec -it ecom_app chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-docker exec -it ecom_app chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+# Install PHP extensions needed for Laravel & Filament
+RUN docker-php-ext-configure intl \
+ && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip intl
 
-# 5. Database migrations & Typesense indexing
-docker exec -u laravel -it ecom_app php artisan migrate --force
-docker exec -u laravel -it ecom_app php artisan scout:import "App\Models\Product"
+# Install Redis extension
+RUN pecl install redis && docker-php-ext-enable redis
 
-# 6. Optimize Laravel performance
-docker exec -u laravel -it ecom_app php artisan config:cache
-docker exec -u laravel -it ecom_app php artisan route:cache
-docker exec -u laravel -it ecom_app php artisan view:cache
+# Install Composer directly
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# Set working directory
+WORKDIR /var/www/html
+
+# Create system user 'laravel' (UID 1000) and set up home directory
+RUN useradd -G www-data,root -u 1000 -d /home/laravel laravel && \
+    mkdir -p /home/laravel/.composer /home/laravel/.config && \
+    chown -R laravel:laravel /home/laravel
+
+# Configure Git safe directory globally for laravel user
+RUN su laravel -c "git config --global --add safe.directory /var/www/html"
+
+# Set proper ownership on working directory
+RUN chown -R laravel:www-data /var/www/html
+
+# Switch to laravel user by default
+USER laravel
