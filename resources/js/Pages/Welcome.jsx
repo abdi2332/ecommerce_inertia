@@ -15,10 +15,10 @@ const typesenseInstantsearchAdapter = new TypesenseInstantSearchAdapter({
     apiKey: "xyz",
     nodes: [
       {
-        host: "https://shirt-economies-best-tropical.trycloudflare.com/", // or your Cloudflare tunnel domain
-        port: "443",                      // standard HTTPS port
-        path: "",
-        protocol: "https",               // must match HTTPS
+        host: window.location.hostname, // Extracts 'shirt-economies-best-tropical.trycloudflare.com'
+        port: window.location.port || (window.location.protocol === 'https:' ? '443' : '80'),
+        path: "typesense",              // Maps to the /typesense/ proxy location in Nginx
+        protocol: window.location.protocol.replace(':', ''),
       },
     ],
     cacheSearchResultsForSeconds: 2 * 60,
@@ -27,6 +27,7 @@ const typesenseInstantsearchAdapter = new TypesenseInstantSearchAdapter({
     query_by: "name,description",
   },
 });
+
 const searchClient = typesenseInstantsearchAdapter.searchClient;
 
 
