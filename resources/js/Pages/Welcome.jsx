@@ -15,10 +15,10 @@ const typesenseInstantsearchAdapter = new TypesenseInstantSearchAdapter({
     apiKey: "xyz",
     nodes: [
       {
-        host: "shirt-economies-best-tropical.trycloudflare.com", // or your Cloudflare tunnel domain
-        port: "443",                      // standard HTTPS port
-        path: "",
-        protocol: "https",               // must match HTTPS
+        host: window.location.hostname,
+        port: window.location.port || (window.location.protocol === "https:" ? "443" : "80"),
+        path: "/typesense",
+        protocol: window.location.protocol.replace(":", ""),
       },
     ],
     cacheSearchResultsForSeconds: 2 * 60,
