@@ -15,7 +15,7 @@ const typesenseInstantsearchAdapter = new TypesenseInstantSearchAdapter({
     apiKey: "xyz",
     nodes: [
       {
-        host: "https://shirt-economies-best-tropical.trycloudflare.com/", // or your Cloudflare tunnel domain
+        host: "shirt-economies-best-tropical.trycloudflare.com", // or your Cloudflare tunnel domain
         port: "443",                      // standard HTTPS port
         path: "",
         protocol: "https",               // must match HTTPS
