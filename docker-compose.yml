@@ -138,7 +138,7 @@ services:
     image: cloudflare/cloudflared:latest
     container_name: ecom_tunnel
     restart: always
-    command: tunnel --no-autoupdate run --url http://nginx:80
+    command: tunnel --no-autoupdate --url http://nginx:80
     depends_on:
       - nginx
     networks:
