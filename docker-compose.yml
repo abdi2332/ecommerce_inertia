@@ -10,12 +10,14 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./:/var/www/html
-      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./:/var/www/html:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
       - /etc/letsencrypt:/etc/nginx/ssl:ro
     depends_on:
-      - app
-      - reverb
+      app:
+        condition: service_started
+      reverb:
+        condition: service_started
     networks:
       - ecom_network
 
@@ -30,12 +32,14 @@ services:
     user: laravel
     volumes:
       - ./:/var/www/html
-      - ./docker/php/custom.ini:/usr/local/etc/php/conf.d/custom.ini
+      - ./docker/php/custom.ini:/usr/local/etc/php/conf.d/custom.ini:ro
     networks:
       - ecom_network
     depends_on:
-      - mysql
-      - redis
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   # 3. Laravel Reverb WebSocket Server
   reverb:
@@ -49,12 +53,14 @@ services:
     command: php artisan reverb:start --host=0.0.0.0 --port=8080
     volumes:
       - ./:/var/www/html
-      - ./docker/php/custom.ini:/usr/local/etc/php/conf.d/custom.ini
+      - ./docker/php/custom.ini:/usr/local/etc/php/conf.d/custom.ini:ro
     networks:
       - ecom_network
     depends_on:
-      - mysql
-      - redis
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   # 4. Background Redis Queue Worker
   queue:
@@ -68,12 +74,14 @@ services:
     command: php artisan queue:work redis --sleep=3 --tries=3 --max-time=3600
     volumes:
       - ./:/var/www/html
-      - ./docker/php/custom.ini:/usr/local/etc/php/conf.d/custom.ini
+      - ./docker/php/custom.ini:/usr/local/etc/php/conf.d/custom.ini:ro
     networks:
       - ecom_network
     depends_on:
-      - mysql
-      - redis
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   # 5. MySQL Database
   mysql:
@@ -89,14 +97,27 @@ services:
       - db_data:/var/lib/mysql
     networks:
       - ecom_network
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$${MYSQL_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   # 6. Redis (Cache, Sessions, Queues, Cart)
   redis:
     image: redis:7-alpine
     container_name: ecom_redis
     restart: always
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
     networks:
       - ecom_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   # 7. Typesense Search Engine
   typesense:
@@ -106,6 +127,7 @@ services:
     environment:
       TYPESENSE_API_KEY: ${TYPESENSE_API_KEY:-your_secret_typesense_key}
       TYPESENSE_DATA_DIR: /data
+    command: '--data-dir /data --api-key=${TYPESENSE_API_KEY:-your_secret_typesense_key} --enable-cors'
     volumes:
       - typesense_data:/data
     networks:
@@ -117,4 +139,5 @@ networks:
 
 volumes:
   db_data:
+  redis_data:
   typesense_data:
