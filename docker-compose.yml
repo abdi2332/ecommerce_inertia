@@ -133,6 +133,17 @@ services:
     networks:
       - ecom_network
 
+  # 8. Cloudflare Quick Tunnel (Free Public HTTPS)
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    container_name: ecom_tunnel
+    restart: always
+    command: tunnel --no-autoupdate run --url http://nginx:80
+    depends_on:
+      - nginx
+    networks:
+      - ecom_network
+
 networks:
   ecom_network:
     driver: bridge
