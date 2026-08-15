@@ -136,14 +136,14 @@ services:
 
   # 8. Cloudflare Named Tunnel (Free Public HTTPS)
   tunnel:
-  image: cloudflare/cloudflared:latest
-  container_name: ecom_tunnel
-  restart: always
-  command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
-  depends_on:
-    - nginx
-  networks:
-    - ecom_network
+    image: cloudflare/cloudflared:latest
+    container_name: ecom_tunnel
+    restart: always
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+    depends_on:
+      - nginx
+    networks:
+      - ecom_network
 
 networks:
   ecom_network:
